@@ -214,6 +214,7 @@ class Controller:
                 row = collect.register(rows, used, by_key, job["candidate"], stats)
                 by_id[row["source_id"]] = row
                 rec["new_candidates"] += stats["new_rows"]
+                job["_new"] = stats["new_rows"] == 1
                 job.setdefault("source_id", row["source_id"])
                 c = job["candidate"]
                 if c.get("acquisition_target") != "DOWNLOAD" or not c.get("fetch_url") or \
@@ -267,6 +268,24 @@ class Controller:
                     stop_flag.set()
                     return
                 sha = hashlib.sha256(body).hexdigest()
+                if sha in by_sha and by_sha[sha] is not row and job.get("_new"):
+                    # a newly registered candidate whose file is already held: not a new document
+                    canon = by_sha[sha]
+                    collect.add_alt(canon, row.get("original_url"), row.get("archive_url"), url)
+                    rows.remove(row)
+                    by_id.pop(row["source_id"], None)
+                    used.discard(row["source_id"])
+                    for k in collect.keys_of(row):
+                        by_key[k] = canon
+                    rec["new_candidates"] -= 1
+                    rec["duplicates"] += 1
+                    self.state["jobs"][jid] = {"done": True, "result": "merged_into_existing",
+                                               "canonical": canon["source_id"], "at": now()}
+                    self.log({"task": TASK, "sweep": sweep, "op": "merged_duplicate",
+                              "canonical": canon["source_id"], "url": url, "sha256": sha})
+                    collect.write_index(self.root, rows)
+                    self.save_state()
+                    return
                 if sha in by_sha and by_sha[sha] is not row:
                     canon = by_sha[sha]
                     collect.add_alt(canon, url)
