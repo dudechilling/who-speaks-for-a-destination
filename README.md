@@ -10,6 +10,7 @@ Course project: CMNS 3500 (Power and Language), Thompson Rivers University, Fall
 |---|---|
 | Provisional research design | Written. See [`research-design.md`](research-design.md). It is **not** an approved methodology. |
 | Preliminary source discovery | **Complete** (task CMNS3500-P3-DISCOVERY-01). |
+| Recovery and expansion sweeps | **In progress** (task CMNS3500-P3-DISCOVERY-02). See [`results/discovery_sweeps/`](results/discovery_sweeps/). |
 | Human review of the corpus | **Not started.** No document is approved for the corpus. |
 | SFL coding and CDA | **Not started.** |
 | Analysis and findings | **Not started.** This repository contains no findings. |
@@ -44,6 +45,11 @@ The discovery range is 1985–2026.
 | `corpus/originals/authors_public.csv` | Public-release copy of the author index: 755 name occurrences (authors, signatories, editors, executives, board chairs) taken from collected documents. |
 | `results/discovery_summary.md` | Discovery report: counts, methods, names, gaps, access limits, technical decisions. |
 | `results/discovery_records/` | Raw agent records: candidate lists, organization-name evidence and search logs (pass one and pass two). |
+| `results/discovery_sweeps/` | DISCOVERY-02 sweep reports, the cumulative coverage assessment and the checkpoint list. |
+| `corpus/originals/acquisition_log.jsonl` | Append-only log of every retrieval attempt since DISCOVERY-02: URL, HTTP status, error, bytes, acceptance result. No content. |
+| `scripts/sweep_controller.py` | Restartable sweep controller (state, heartbeat, byte cap, disk floor, safe recovery). |
+| `scripts/validate_inventory.py`, `scripts/sweep_stats.py`, `scripts/coverage_report.py` | Inventory checks, sweep change figures and coverage tables. |
+| `scripts/make_public_authors.py`, `scripts/prepublish_check.py` | Public author copy and the privacy/secrets check run before every commit. |
 | `scripts/polite_fetch.py` | Rate-limited HTTP fetch helper. |
 | `scripts/collect.py` | Downloads candidates, checks file type and checksum, and writes the source index. |
 | `prompts/` | Prompt records for each authorized task, saved word for word before execution. |
@@ -55,7 +61,9 @@ Every row in `source_index.csv` is a **candidate**. No row is approved.
 - The `include` column holds the researcher's decision: `INCLUDE`, `EXCLUDE` or `REVIEW`.
 - A **blank** `include` cell means that no decision has been made. All 1,711 cells are blank now.
 - Only a row that the researcher marks `INCLUDE` is part of the research corpus.
-- `acquisition_status` describes availability only (`DOWNLOADED`, `METADATA_ONLY`, `UNAVAILABLE`, `ACCESS_RESTRICTED`, `DOWNLOAD_FAILED`, `DOWNLOADED_INCOMPLETE`). It does not show approval.
+- `acquisition_status` describes availability only (`DOWNLOADED`, `METADATA_ONLY`, `UNAVAILABLE`, `ACCESS_RESTRICTED`, `DOWNLOAD_FAILED`, `DOWNLOADED_INCOMPLETE`, `DUPLICATE`). It does not show approval. `DUPLICATE` rows point to the row that holds the identical file (`duplicate_of`).
+- `superseded_local_files` lists truncated files that a verified complete copy replaced. The truncated files stay on the m710 with their SHA-256.
+- `date_status` records how a publication date was checked (added in DISCOVERY-02).
 - `metadata_confidence` and all titles, dates and document types are recorded by AI agents. A person has not reviewed them.
 
 ### Provenance fields
@@ -67,9 +75,10 @@ Every row in `source_index.csv` is a **candidate**. No row is approved.
 
 | Material | Reason |
 |---|---|
-| Downloaded originals (929 files, 1.98 GB, under `corpus/originals/<Region>/`) | Third-party documents. Copyright stays with the publishers and archives. They are kept on the researcher's machine (m710). |
-| Incomplete downloads (13 truncated files) | Not usable, and third-party content. |
-| Extracted source text | Full text of third-party documents. Not published without permission. |
+| Downloaded originals (under `corpus/originals/<Region>/`; counts in the latest sweep report) | Third-party documents. Copyright stays with the publishers and archives. They are kept on the researcher's machine (m710). |
+| Incomplete and superseded truncated downloads | Not usable, and third-party content. |
+| Extracted source text and OCR output (`corpus/derived/`) | Full text of third-party documents. Not published without permission. |
+| Controller state (`.discovery_state/`) | Private local agent state. |
 | `corpus/originals/authors.csv` | Canonical author index. It quotes contact details from documents; the public copy above removes them. |
 | `methodology.md` | Unapproved early draft. It is not the project methodology. |
 | Draft proposal (`.docx`) and office files | Drafts. The draft proposal includes third-party images. |
@@ -84,7 +93,17 @@ Each `local_file` path in the index points to the copy on the m710. That file is
 - Network access to the public web and the Internet Archive.
 - `pdftotext` (poppler-utils), only to repeat the name extraction.
 
-### Steps
+### Sweeps (DISCOVERY-02)
+```bash
+python3 -I -B scripts/sweep_controller.py build-sweep1 --out .discovery_state/queues/sweep1.jsonl
+systemd-run --user --unit=cmns3500-discovery-s1 --working-directory="$PWD" \
+  /usr/bin/python3 -I -B scripts/sweep_controller.py run --sweep 1 --queue .discovery_state/queues/sweep1.jsonl
+python3 -I -B scripts/sweep_controller.py status
+python3 -I -B scripts/validate_inventory.py --rev HEAD
+```
+The controller can be restarted at any time; finished jobs are skipped. Only one controller can hold the index lock.
+
+### Steps (DISCOVERY-01)
 1. **Searches.** The search queries, platforms and dates are in `results/discovery_records/pass*/**_searchlog.jsonl`. The query patterns are in `results/discovery_summary.md` §3. AI agents ran the searches with a web-search tool and with the Wayback CDX API. Search-engine results change over time, so a repeat search can return different results.
 2. **Retrieval.** `collect.py` reads the candidate files and downloads each `fetch_url`, with one request per host at a time, 2 s between requests (4 s for archive.org), robots.txt compliance, and Retry-After handling. Run order used:
    ```bash
@@ -105,7 +124,8 @@ The source IDs in `source_index.csv` are canonical. A new run from scratch can a
 - **Blocked by robots.txt or bot checks:** MemoryBC (bot challenge); Canadiana, LAC Aurora and WorldCat (robots.txt); one Destination Canada PDF.
 - **Not reachable on 2026-10-20:** BC Archives search (SSL error); bchdp-i2.arcabc.ca and news.totabc.org (DNS); unwto.org (HTTP 530).
 - **Members-only or login pages** (2006 association sites) and **Google Drive files** were not accessed.
-- **The 2 GB download budget was reached.** 681 located candidates were not downloaded.
+- **The 2 GB download budget was reached in DISCOVERY-01.** DISCOVERY-02 is authorized to download up to 4,000,000,000 more bytes and keeps at least 5 GB of disk free. See the sweep reports.
+- **robots.txt:** 105 NBCTA newsletters on mailchi.mp are disallowed for automated retrieval and have no Wayback capture.
 - **Little survives from before 1998.** Records from 1985–1998 are rare in every region.
 
 See `results/discovery_summary.md` §5–§8 for gaps, failures and unresolved leads.

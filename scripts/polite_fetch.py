@@ -92,7 +92,8 @@ def _raw_get(url, max_bytes=None):
     req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
         body = r.read(max_bytes) if max_bytes else r.read()
-        return r.status, r.geturl(), r.headers.get("Content-Type", ""), body
+        return r.status, r.geturl(), r.headers.get("Content-Type", ""), body, \
+            dict(r.headers.items())
 
 
 def robots_allowed(url):
@@ -104,7 +105,7 @@ def robots_allowed(url):
         text = ""
         with HostSlot(host):
             try:
-                _, _, _, body = _raw_get(robots_url, 500_000)
+                _, _, _, body, _ = _raw_get(robots_url, 500_000)
                 text = body.decode("utf-8", "replace")
             except urllib.error.HTTPError as e:
                 # 4xx other than 401/403 means no robots file: allowed.
@@ -120,10 +121,11 @@ def robots_allowed(url):
 
 
 def fetch(url, max_bytes=None, retries=2):
-    """Return dict(status, final_url, content_type, body, error)."""
+    """Return dict(status, final_url, content_type, body, error, headers)."""
+    url = url.strip().replace(" ", "%20")  # percent-encode spaces in published URLs
     host = _host(url)
     out = {"url": url, "status": None, "final_url": None, "content_type": None,
-           "body": b"", "error": None}
+           "body": b"", "error": None, "headers": {}}
     if _denied(host):
         out["error"] = "host_denied_earlier"
         return out
@@ -133,13 +135,14 @@ def fetch(url, max_bytes=None, retries=2):
     for attempt in range(retries + 1):
         with HostSlot(host):
             try:
-                out["status"], out["final_url"], out["content_type"], out["body"] = \
-                    _raw_get(url, max_bytes)
+                (out["status"], out["final_url"], out["content_type"], out["body"],
+                 out["headers"]) = _raw_get(url, max_bytes)
                 out["error"] = None
                 return out
             except urllib.error.HTTPError as e:
                 out["status"] = e.code
                 out["error"] = f"http_{e.code}"
+                out["headers"] = dict(e.headers.items()) if e.headers else {}
                 retry_after = e.headers.get("Retry-After") if e.headers else None
             except Exception as e:  # network errors
                 out["error"] = f"{type(e).__name__}: {e}"[:300]
@@ -169,6 +172,7 @@ def main():
     a = ap.parse_args()
     r = fetch(a.url, a.max_bytes)
     body = r.pop("body")
+    r.pop("headers", None)
     r["bytes"] = len(body)
     if a.output and body:
         with open(a.output, "wb") as f:

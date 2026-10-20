@@ -5,6 +5,7 @@ corpus/originals/**
 !corpus/originals/
 !corpus/originals/source_index.csv
 !corpus/originals/authors_public.csv
+!corpus/originals/acquisition_log.jsonl
 
 # Extracted or normalized source text: not published without permission.
 corpus/treated/
@@ -24,3 +25,10 @@ __pycache__/
 .*.part
 *.tmp
 .DS_Store
+
+# Local controller state, locks and agent working files (private; never published).
+.discovery_state/
+.source_index.lock
+
+# Derived OCR and extracted text (source text; not published).
+corpus/derived/

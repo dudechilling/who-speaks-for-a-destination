@@ -45,7 +45,8 @@ REQUIRED = ["source_id", "region", "organization", "organization_name_at_publica
             "original_url", "archive_url", "alternate_urls", "retrieval_date", "local_file",
             "file_type", "sha256", "acquisition_status", "duplicate_of",
             "metadata_confidence", "availability_notes", "include", "selection_notes"]
-EXTRA = ["archive_capture_date", "date_evidence", "title_basis", "file_size_bytes", "found_by"]
+EXTRA = ["archive_capture_date", "date_evidence", "title_basis", "file_size_bytes", "found_by",
+         "date_status", "superseded_local_files"]  # last two added in CMNS3500-P3-DISCOVERY-02
 COLUMNS = REQUIRED + EXTRA
 USER_COLUMNS = {"include", "selection_notes"}
 REGION_CODE = {"Vancouver_Island": "VI", "Thompson_Okanagan": "TO", "Kootenay_Rockies": "KR",
@@ -143,6 +144,13 @@ def sniff(body):
     head = body[:2048].lower()
     if b"<html" in head or b"<!doctype html" in head:
         return "text/html"
+    sample = body[:4096]
+    if sample and b"\x00" not in sample:
+        try:
+            sample.decode("utf-8")
+            return "text/plain"  # e.g. OCR text files published by digital newspaper archives
+        except UnicodeDecodeError:
+            pass
     return "application/octet-stream"
 
 
