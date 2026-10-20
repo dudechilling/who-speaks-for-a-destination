@@ -84,10 +84,20 @@ def main():
     ap.add_argument("--dates", action="store_true")
     ap.add_argument("--names", action="store_true")
     ap.add_argument("--out", default=os.path.join(ROOT, ".discovery_state", "sweep3", "packets"))
+    ap.add_argument("--sweep", type=int, default=0,
+                    help="only rows stored in this sweep (acquisition_log) that have no date_status")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
     rows = list(csv.DictReader(open(os.path.join(O, "source_index.csv"), encoding="utf-8")))
     dl = [r for r in rows if r["acquisition_status"] == "DOWNLOADED"]
+    if a.sweep:
+        only = set()
+        for l in open(os.path.join(O, "acquisition_log.jsonl"), encoding="utf-8"):
+            if l.strip():
+                e = json.loads(l)
+                if e.get("op") == "stored" and e.get("sweep") == a.sweep:
+                    only.add(e["source_id"])
+        dl = [r for r in dl if r["source_id"] in only and not r.get("date_status")]
     summary = {}
     if a.dates:
         sel = [r for r in dl if not r["publication_year"] or WEAK.search(r["date_evidence"])]

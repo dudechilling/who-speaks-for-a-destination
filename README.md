@@ -10,8 +10,8 @@ Course project: CMNS 3500 (Power and Language), Thompson Rivers University, Fall
 |---|---|
 | Provisional research design | Written. See [`research-design.md`](research-design.md). It is **not** an approved methodology. |
 | Preliminary source discovery | **Complete** (task CMNS3500-P3-DISCOVERY-01). |
-| Recovery and expansion sweeps | **In progress** (task CMNS3500-P3-DISCOVERY-02). See [`results/discovery_sweeps/`](results/discovery_sweeps/). |
-| Human review of the corpus | **Not started.** No document is approved for the corpus. |
+| Recovery and expansion sweeps | **Complete**: four sweeps (task CMNS3500-P3-DISCOVERY-02). See [`results/discovery_sweeps/final_coverage_report.md`](results/discovery_sweeps/final_coverage_report.md). |
+| Human review of the corpus | **Not started.** No document is approved for the corpus. 1,972 candidates; all `include` cells are blank. |
 | SFL coding and CDA | **Not started.** |
 | Analysis and findings | **Not started.** This repository contains no findings. |
 
@@ -41,15 +41,17 @@ The discovery range is 1985–2026.
 | Path | Content |
 |---|---|
 | `research-design.md` | Provisional research design. Controls the scope. |
-| `corpus/originals/source_index.csv` | Discovery register: 1,711 candidate documents with provenance. |
-| `corpus/originals/authors_public.csv` | Public-release copy of the author index: 755 name occurrences (authors, signatories, editors, executives, board chairs) taken from collected documents. |
+| `corpus/originals/source_index.csv` | Discovery register: 1,972 candidate documents with provenance (after DISCOVERY-02). |
+| `corpus/originals/authors_public.csv` | Public-release copy of the author index: 1,526 name occurrences (authors, signatories, editors, executives, board chairs) taken from collected documents. |
 | `results/discovery_summary.md` | Discovery report: counts, methods, names, gaps, access limits, technical decisions. |
 | `results/discovery_records/` | Raw agent records: candidate lists, organization-name evidence and search logs (pass one and pass two). |
-| `results/discovery_sweeps/` | DISCOVERY-02 sweep reports, the cumulative coverage assessment and the checkpoint list. |
+| `results/discovery_sweeps/` | DISCOVERY-02 sweep reports (1–4), the final coverage report, the cumulative coverage assessment and the checkpoint list. |
 | `corpus/originals/acquisition_log.jsonl` | Append-only log of every retrieval attempt since DISCOVERY-02: URL, HTTP status, error, bytes, acceptance result. No content. |
 | `scripts/sweep_controller.py` | Restartable sweep controller (state, heartbeat, byte cap, disk floor, safe recovery). |
 | `scripts/validate_inventory.py`, `scripts/sweep_stats.py`, `scripts/coverage_report.py` | Inventory checks, sweep change figures and coverage tables. |
 | `scripts/make_public_authors.py`, `scripts/prepublish_check.py` | Public author copy and the privacy/secrets check run before every commit. |
+| `scripts/build_review_packets.py`, `scripts/ocr_first_pages.py`, `scripts/apply_sweep3.py` | Sweep-3 date and name review: packets, selective OCR, and machine-checked application of agent claims. |
+| `scripts/verify_wayback_captures.py`, `scripts/apply_corrections.py` | Sweep-4 capture-date verification by digest and documented metadata corrections. |
 | `scripts/polite_fetch.py` | Rate-limited HTTP fetch helper. |
 | `scripts/collect.py` | Downloads candidates, checks file type and checksum, and writes the source index. |
 | `prompts/` | Prompt records for each authorized task, saved word for word before execution. |
@@ -69,7 +71,7 @@ Every row in `source_index.csv` is a **candidate**. No row is approved.
 ### Provenance fields
 
 - **Source index:** each row keeps its `original_url`; its Wayback `archive_url` and `archive_capture_date` (kept separate from `publication_date`); `retrieval_date`; `sha256`; `date_evidence`; `title_basis` and `found_by`.
-- **Author index:** `authors_public.csv` is identical to the canonical `authors.csv` (kept on the m710) except in 8 `evidence_note` cells. In those cells, quoted email addresses and phone numbers are replaced with `[contact details removed]`. Each name occurrence keeps its `source_id`, `page_or_section` and a short `evidence_note`. Names were not merged across documents. Generated `search_variants` are search aids, not verified identities.
+- **Author index:** `authors_public.csv` is identical to the canonical `authors.csv` (kept on the m710) except where quoted contact details are removed. In those cells, quoted email addresses and phone numbers are replaced with `[contact details removed]`. Each name occurrence keeps its `source_id`, `page_or_section` and a short `evidence_note`. Names were not merged across documents. Generated `search_variants` are search aids, not verified identities.
 
 ## Not in this repository
 

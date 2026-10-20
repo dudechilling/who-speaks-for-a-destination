@@ -34,7 +34,7 @@ GENERIC = re.compile(r"^(info|admin|contact|office|media|marketing|reception|gen
                      r"inquiries|enquiries|cta|tourism|visitor|travel|membership|members|"
                      r"communications|webmaster|noreply|no-reply|support|editor|news|events)$", re.I)
 PHONE = re.compile(r"(?<![\d/.-])\(?\b\d{3}\)?[-. ]\d{3}[-. ]\d{4}\b(?![\d/])")
-LOCALPATH = re.compile(r"/home/[a-z]|/tmp/claude|scratchpad|claude-\d{4}|/root/")
+LOCALPATH = re.compile(r"/home/[a-z]|/tmp/claude|/scratchpad|claude-\d{4}|/root/")
 BINARY_MAGIC = (b"%PDF", b"\xd0\xcf\x11\xe0", b"PK\x03\x04", b"\x89PNG", b"\xff\xd8\xff",
                 b"GIF8", b"\x1f\x8b", b"7z\xbc\xaf")
 

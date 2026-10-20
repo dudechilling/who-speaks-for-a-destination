@@ -58,30 +58,46 @@ def main():
     except BlockingIOError:
         sys.exit("another process holds the source index lock")
     rows = collect.load_index(ROOT)
+    NOMATCH = (" Sweep 4: the retrieved file's digest matches no CDX capture of the original URL;"
+               " capture date not verified by digest.")
+    for r in rows:  # redo the first run's "no match" rows (port-form query bug, fixed below)
+        r["availability_notes"] = r["availability_notes"].replace(NOMATCH, "").replace(
+            NOMATCH.strip(), "").strip()
     todo = [r for r in rows if r["acquisition_status"] == "DOWNLOADED" and r["local_file"]
             and r["source_class"] == "wayback_machine" and r["original_url"]
-            and "digest" not in r["availability_notes"]]
+            and not any(m in r["availability_notes"] for m in (
+                MARK, "Sweep 4 correction: the retrieved file matches", NOMATCH.strip(),
+                "no Wayback capture listed"))]
     if a.limit:
         todo = todo[:a.limit]
     stats = {"checked": 0, "verified_same_date": 0, "corrected": 0, "no_match": 0, "cdx_error": 0}
     for i, r in enumerate(todo, 1):
         dg = sha1_b32(os.path.join(O, r["local_file"]))
         url = re.sub(r"^https?://", "", r["original_url"])
-        res = polite_fetch.fetch("https://web.archive.org/cdx/search/cdx?url=" + url +
-                                 "&output=json&fl=timestamp,digest&filter=statuscode:200")
+        url = re.sub(r"^([^/]+):(80|443)/", r"\1/", url)  # drop default ports
+        data, res = None, None
+        for q in (url, "http://" + url):
+            res = polite_fetch.fetch("https://web.archive.org/cdx/search/cdx?url=" + q +
+                                     "&output=json&fl=timestamp,digest&filter=statuscode:200")
+            try:
+                data = json.loads(res["body"] or b"[]")[1:]
+            except ValueError:
+                data = None
+            if data:
+                break
         stats["checked"] += 1
-        try:
-            data = json.loads(res["body"] or b"[]")[1:]
-        except ValueError:
-            data = None
         if res["error"] or data is None:
             stats["cdx_error"] += 1
             continue
+        if not data:
+            r["availability_notes"] = (r["availability_notes"] + " Sweep 4: no Wayback capture listed"
+                                       " by the CDX for the original URL (may have been retrieved via an"
+                                       " alternate URL); capture date not verified by digest.").strip()
+            stats["no_capture_listed"] = stats.get("no_capture_listed", 0) + 1
+            continue
         ts = sorted(t for t, d in data if d == dg)
         if not ts:
-            r["availability_notes"] = (r["availability_notes"] + " Sweep 4: the retrieved file's digest"
-                                       " matches no CDX capture of the original URL; capture date not"
-                                       " verified by digest.").strip()
+            r["availability_notes"] = (r["availability_notes"] + NOMATCH).strip()
             stats["no_match"] += 1
         else:
             first = ts[0]

@@ -74,6 +74,9 @@ def confirmed(sid, evidence):
     return all(norm(q) and norm(q) in t for q in qs)
 
 
+LABEL = ["Sweep 3"]
+
+
 def load(prefix_glob):
     out = []
     for p in sorted(glob.glob(os.path.join(S3, prefix_glob))):
@@ -89,7 +92,11 @@ def load(prefix_glob):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--dir", default=S3, help="directory with the review outputs (default sweep 3)")
+    ap.add_argument("--label", default="Sweep 3", help="label used in appended evidence")
     a = ap.parse_args()
+    globals()["S3"] = a.dir
+    LABEL[0] = a.label
     rows = collect.load_index(ROOT)
     by_id = {r["source_id"]: r for r in rows}
     st = collections.Counter()
@@ -114,14 +121,14 @@ def main():
         if status in ("verified_in_document", "conflicts_with_index") and not ok and \
                 re.search(r"page image|\.png|image", ev + " " + note, re.I):
             r["date_status"] = "read_from_page_image_needs_confirmation"
-            r["date_evidence"] = (r["date_evidence"] + f" | Sweep 3: an agent read {y or '-'} / "
+            r["date_evidence"] = (r["date_evidence"] + f" | {LABEL[0]}: an agent read {y or '-'} / "
                                   f"{dt_ or '-'} ({kind}) from a page image: {ev}; not machine-"
                                   "confirmed and not applied; needs human confirmation.").strip(" |")
             st["image_reading_not_applied"] += 1
             continue
         if status in ("verified_in_document", "conflicts_with_index") and not ok:
             r["date_status"] = "agent_claim_not_confirmed"
-            r["date_evidence"] = (r["date_evidence"] + f" | Sweep 3: an agent proposed {y or dt_} "
+            r["date_evidence"] = (r["date_evidence"] + f" | {LABEL[0]}: an agent proposed {y or dt_} "
                                   f"({kind}) but the quoted evidence was not found in the extracted "
                                   "text; not applied.").strip(" |")
             st["not_confirmed"] += 1
@@ -135,26 +142,26 @@ def main():
                 if dt_ and not r["publication_date"]:
                     r["publication_date"] = dt_
                 r["date_status"] = "verified_in_document"
-                r["date_evidence"] = (r["date_evidence"] + f" | Sweep 3 (in document, {kind}): {ev}"
+                r["date_evidence"] = (r["date_evidence"] + f" | {LABEL[0]} (in document, {kind}): {ev}"
                                       + (f"; {note}" if note else "")).strip(" |")
                 st["verified"] += 1
         if status == "conflicts_with_index":
             old = f"{r['publication_year'] or '-'} / {r['publication_date'] or '-'}"
             r["publication_year"], r["publication_date"] = y, dt_
             r["date_status"] = "corrected_from_document"
-            r["date_evidence"] = (r["date_evidence"] + f" | Sweep 3 correction (in document, {kind}): "
+            r["date_evidence"] = (r["date_evidence"] + f" | {LABEL[0]} correction (in document, {kind}): "
                                   f"{ev}; earlier index value {old} came from the basis above"
                                   + (f"; {note}" if note else "")).strip(" |")
             st["corrected"] += 1
         elif status == "uncertain":
             r["date_status"] = "uncertain"
-            r["date_evidence"] = (r["date_evidence"] + f" | Sweep 3 (uncertain): {ev or '-'}"
+            r["date_evidence"] = (r["date_evidence"] + f" | {LABEL[0]} (uncertain): {ev or '-'}"
                                   + (f"; {note}" if note else "")).strip(" |")
             st["uncertain"] += 1
         elif status == "not_found":
             r["date_status"] = "listing_only_not_confirmed" if weak_index else "not_found_in_document"
             if note:
-                r["date_evidence"] = (r["date_evidence"] + f" | Sweep 3: no date in document; {note}").strip(" |")
+                r["date_evidence"] = (r["date_evidence"] + f" | {LABEL[0]}: no date in document; {note}").strip(" |")
             st[r["date_status"]] += 1
         pt = (d.get("printed_title") or "").strip()
         if pt and not r["title_basis"].startswith("printed") and norm(pt) and norm(pt) in text_of(sid):
@@ -185,7 +192,7 @@ def main():
         row = {k: (x.get(k) if not isinstance(x.get(k), list) else " ; ".join(x.get(k))) or ""
                for k in fields}
         row["name_id"] = f"N{nmax:04d}"
-        row["evidence_note"] = (row["evidence_note"] + " [sweep 3, DISCOVERY-02]").strip()
+        row["evidence_note"] = (row["evidence_note"] + f" [{LABEL[0].lower()}, DISCOVERY-02]").strip()
         new.append(row)
         have.add((nm, sid, x.get("name_type")))
     st["authors_added"] = len(new)
