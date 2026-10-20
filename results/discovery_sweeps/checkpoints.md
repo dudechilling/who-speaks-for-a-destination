@@ -13,3 +13,4 @@ git log --oneline
 | DISCOVERY-02 sweep 1 (recovery) | `fe52ec06e3b9cbdb8ca2221792ff40aae9391c4f` | 2026-10-20 | yes |
 | DISCOVERY-02 sweep 2 (historical archive search) | `b090f6b3e237808290f98ab1173305901f2c0aff` | 2026-10-20 | yes |
 | DISCOVERY-02 sweep 3 (coverage assessment) | `02f57f803dd765468150ce6fe9964b2396a076ad` | 2026-10-20 | yes |
+| DISCOVERY-02 sweep 4 (final reconciliation) | `2821d25bc6e3188665dab4ef15d978d144700576` | 2026-10-20 | yes |
