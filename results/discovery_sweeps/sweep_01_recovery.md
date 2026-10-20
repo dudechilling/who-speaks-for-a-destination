@@ -2,7 +2,7 @@
 
 Task: CMNS3500-P3-DISCOVERY-02 (prompt record `prompts/20261020-072326_CMNS3500-P3-DISCOVERY-02.md`).
 Execution: 2026-10-20, 07:28–08:25 UTC (controller runs), with checks and publication afterwards.
-Previous state: commit `33e38e0` (end of DISCOVERY-01).
+Previous state: commit `fc7ff99` (end of DISCOVERY-01).
 
 This sweep retrieved candidates that were already in the register. It did not search for new documents. Every row is still a candidate. No document is researcher-approved.
 
@@ -128,7 +128,7 @@ New complete downloads by decade of evidenced publication:
 - **METADATA_ONLY (24):** catalogue records and listing-only items with no file link.
 - **UNAVAILABLE (28):** unchanged since DISCOVERY-01.
 
-## 7. Verification (`scripts/validate_inventory.py`, compared with `33e38e0`)
+## 7. Verification (`scripts/validate_inventory.py`, compared with `fc7ff99`)
 All checks passed.
 
 | Check | Result |
@@ -146,7 +146,7 @@ All checks passed.
 | Author-to-source links (both author files) | all valid |
 | `include` / `selection_notes` changed | none; all 1,711 `include` cells are blank |
 
-**Public author copy:** `authors_public.csv` was regenerated with a stricter contact pattern. It now also removes one phone number in parenthesized-area-code form that the earlier copy missed (row N0507). **That number is still in commit `33e38e0`.** Removing it from history would need a force-push, which this task does not allow. Earl's decision is required.
+**Public author copy:** `authors_public.csv` was regenerated with a stricter contact pattern. It now also removes one phone number in parenthesized-area-code form that the earlier copy missed (row N0507). The repository history was later corrected to remove it (2026-10-20); see `checkpoints.md`, "History correction". The commit SHAs in this report are the current ones.
 
 ## 8. Checkpoint
 - Commit: recorded in `results/discovery_sweeps/checkpoints.md` after the push. A commit cannot contain its own SHA.

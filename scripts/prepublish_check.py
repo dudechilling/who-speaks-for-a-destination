@@ -16,7 +16,8 @@ Checks on every staged file:
 - local paths: home directories, temporary and agent scratch paths (prompt records,
   which must stay verbatim, are reported but not failed for the working-directory path).
 
-Usage: python3 -I scripts/prepublish_check.py
+Usage: python3 -I scripts/prepublish_check.py [--all]
+       --all checks every file in the index, not only the changed ones.
 """
 import re
 import subprocess
@@ -33,15 +34,19 @@ EMAIL = re.compile(r"([A-Za-z0-9._%+-]+)@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 GENERIC = re.compile(r"^(info|admin|contact|office|media|marketing|reception|general|hello|"
                      r"inquiries|enquiries|cta|tourism|visitor|travel|membership|members|"
                      r"communications|webmaster|noreply|no-reply|support|editor|news|events)$", re.I)
+# Documented exceptions: organization office numbers kept on Earl's instruction (2026-10-20).
+ALLOWED_PHONES = {("results/discovery_records/pass1/CC_names.jsonl", "(250) 392-2226")}
 PHONE = re.compile(r"(?<![\d/.-])\(?\b\d{3}\)?[-. ]\d{3}[-. ]\d{4}\b(?![\d/])")
 LOCALPATH = re.compile(r"/home/[a-z]|/tmp/claude|/scratchpad|claude-\d{4}|/root/")
 BINARY_MAGIC = (b"%PDF", b"\xd0\xcf\x11\xe0", b"PK\x03\x04", b"\x89PNG", b"\xff\xd8\xff",
                 b"GIF8", b"\x1f\x8b", b"7z\xbc\xaf")
 
 
-def staged():
-    out = subprocess.run(["git", "diff", "--cached", "--name-only", "--diff-filter=ACMR", "-z"],
-                         capture_output=True, check=True).stdout
+def staged(all_files=False):
+    """Changed files in the index, or (all_files) every file in the index."""
+    cmd = ["git", "ls-files", "-z"] if all_files else \
+        ["git", "diff", "--cached", "--name-only", "--diff-filter=ACMR", "-z"]
+    out = subprocess.run(cmd, capture_output=True, check=True).stdout
     return [p for p in out.decode().split("\0") if p]
 
 
@@ -51,7 +56,7 @@ def blob(path):
 
 def main():
     fails, notes = [], []
-    files = staged()
+    files = staged(all_files="--all" in sys.argv[1:])
     for p in files:
         data = blob(p)
         if p.startswith("corpus/originals/") and p not in ALLOWED_ORIGINALS:
@@ -71,6 +76,9 @@ def main():
             if not GENERIC.match(m.group(1)):
                 fails.append(f"{p}: personal email address: {m.group(0)}")
         for m in PHONE.finditer(text):
+            if (p, m.group(0)) in ALLOWED_PHONES:
+                notes.append(f"{p}: documented organization number kept: {m.group(0)}")
+                continue
             fails.append(f"{p}: phone number: {m.group(0)}")
         for m in LOCALPATH.finditer(text):
             (notes if p.startswith("prompts/") else fails).append(

@@ -6,7 +6,7 @@ Execution: 2026-10-20.
 - Controller: 09:28–09:35 UTC.
 - Checks and publication followed.
 
-Previous checkpoint: sweep 1, commit `fe52ec06e3b9cbdb8ca2221792ff40aae9391c4f`.
+Previous checkpoint: sweep 1, commit `64f87d98fb7a47af2740ff93f3b464d127b24d2d`.
 
 Agent instructions, saved word for word:
 - `prompts/20261020-083520_CMNS3500-P3-DISCOVERY-02_sweep2-agent-brief.md`

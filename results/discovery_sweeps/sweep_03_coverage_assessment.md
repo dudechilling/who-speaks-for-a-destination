@@ -6,7 +6,7 @@ Execution: 2026-10-20.
 - Review agents: 17:28–17:47 UTC.
 - Apply, checks and publication followed.
 
-Previous checkpoint: sweep 2, commit `b090f6b3e237808290f98ab1173305901f2c0aff`.
+Previous checkpoint: sweep 2, commit `9a794658905489f431bbaec58e7145a2b96037b1`.
 
 Agent instructions, saved word for word:
 - `prompts/20261020-172829_CMNS3500-P3-DISCOVERY-02_sweep3-agent-brief.md`

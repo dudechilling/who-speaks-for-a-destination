@@ -1,6 +1,6 @@
-# Who Markets a Destination?
+# Who speaks for a destination?
 
-A historical study of the language, leadership and stated priorities of British Columbia's regional tourism organizations.
+A historical study of language, governance and performance in British Columbia's regional tourism organizations.
 
 Course project: CMNS 3500 (Power and Language), Thompson Rivers University, Fall 2026, Project 3.
 

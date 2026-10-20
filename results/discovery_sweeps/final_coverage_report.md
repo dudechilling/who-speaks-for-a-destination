@@ -14,7 +14,7 @@ Sweep reports:
 
 ## 1. Summary of change in DISCOVERY-02
 
-| Measure | Start (DISCOVERY-01, commit `33e38e0`) | End (sweep 4) |
+| Measure | Start (DISCOVERY-01, commit `fc7ff99`) | End (sweep 4) |
 |---|---|---|
 | Candidate rows | 1,711 | 1,972 |
 | Complete downloaded originals (`DOWNLOADED`) | 916 | 1,730 |

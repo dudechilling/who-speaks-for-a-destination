@@ -32,3 +32,6 @@ __pycache__/
 
 # Derived OCR and extracted text (source text; not published).
 corpus/derived/
+
+# Prompt record that quotes a removed personal phone number verbatim (local only).
+prompts/20261020-210944_CMNS3500-P3-HISTORY-REWRITE.md

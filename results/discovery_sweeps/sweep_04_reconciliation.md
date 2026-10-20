@@ -2,7 +2,7 @@
 
 Task: CMNS3500-P3-DISCOVERY-02.
 Execution: 2026-10-20, 17:50–20:50 UTC, with checks and publication afterwards.
-Previous checkpoint: sweep 3, commit `02f57f803dd765468150ce6fe9964b2396a076ad`.
+Previous checkpoint: sweep 3, commit `dd03fde6e54231553e8406a088887b201f5218a5`.
 
 **Why a fourth sweep was justified.** Sweep 3 left material that could still be recovered or corrected:
 - 523 references to documents not yet located;
