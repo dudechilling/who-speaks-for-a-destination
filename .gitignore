@@ -1,0 +1,26 @@
+# Downloaded third-party originals: kept on the m710 only, never redistributed.
+# Public: source_index.csv and the public-release author copy only.
+# authors.csv (canonical, contains contact details quoted from documents) stays local.
+corpus/originals/**
+!corpus/originals/
+!corpus/originals/source_index.csv
+!corpus/originals/authors_public.csv
+
+# Extracted or normalized source text: not published without permission.
+corpus/treated/
+
+# Unapproved draft methodology (not final; superseded by the approval process).
+methodology.md
+
+# Drafts, office documents and lock files.
+*.docx
+*.xlsx
+~$*
+
+# Temporary and machine files.
+__pycache__/
+*.pyc
+*.part
+.*.part
+*.tmp
+.DS_Store
