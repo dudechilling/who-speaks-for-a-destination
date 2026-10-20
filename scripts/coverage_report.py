@@ -165,6 +165,11 @@ def main():
     st = collections.Counter(r["acquisition_status"] for r in rows)
     L += ["### Coverage by acquisition status", "", "| Status | Rows |", "|---|---|"]
     L += [f"| {s} | {st[s]} |" for s in STATUSES + sorted(set(st) - set(STATUSES)) if st[s]] + [""]
+    ds = collections.Counter(r.get("date_status") or "(not reviewed in sweep 3)" for r in rows)
+    L += ["### Coverage by date status (publication-date evidence)", "",
+          "| date_status | Rows | With a publication year |", "|---|---|---|"]
+    L += [f"| {k} | {v} | {sum(1 for r in rows if (r.get('date_status') or '(not reviewed in sweep 3)') == k and r['publication_year'])} |"
+          for k, v in ds.most_common()] + [""]
     mc = collections.Counter(r["metadata_confidence"] or "(blank)" for r in rows)
     L += ["### Coverage by metadata confidence", "", "| Confidence | Rows | Downloaded |",
           "|---|---|---|"]

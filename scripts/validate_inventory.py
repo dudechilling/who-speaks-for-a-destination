@@ -102,8 +102,13 @@ def main():
     res["dated_rows"] = sum(1 for r in rows if r["publication_year"])
     res["dated_rows_without_date_evidence"] = sum(1 for r in rows if r["publication_year"]
                                                   and not r["date_evidence"].strip())
-    res["publication_date_equals_capture_date"] = [r["source_id"] for r in rows if r["publication_date"]
-                                                   and r["publication_date"] == r["archive_capture_date"]]
+    same = [r for r in rows if r["publication_date"] and r["publication_date"] == r["archive_capture_date"]]
+    # equal dates are acceptable only when the date is printed in the document (same-day capture)
+    res["publication_date_equals_capture_date"] = [
+        r["source_id"] for r in same
+        if r.get("date_status") not in ("verified_in_document", "corrected_from_document")]
+    res["same_day_capture_documented"] = [r["source_id"] for r in same
+                                          if r["source_id"] not in res["publication_date_equals_capture_date"]]
     # 8
     bad_pdf = []
     if not a.skip_pdf:

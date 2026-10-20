@@ -11,3 +11,4 @@ git log --oneline
 |---|---|---|---|
 | DISCOVERY-01 publication | `33e38e0e31144b0e8ba4a92d1a8c81bdcca2670f` | 2026-10-20 | yes |
 | DISCOVERY-02 sweep 1 (recovery) | `fe52ec06e3b9cbdb8ca2221792ff40aae9391c4f` | 2026-10-20 | yes |
+| DISCOVERY-02 sweep 2 (historical archive search) | `b090f6b3e237808290f98ab1173305901f2c0aff` | 2026-10-20 | yes |

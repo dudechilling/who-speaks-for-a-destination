@@ -252,6 +252,7 @@ class Controller:
             self.log({"task": TASK, "sweep": sweep, "op": op, "source_id": row["source_id"],
                       "url": url, "status": res["status"], "error": res["error"],
                       "bytes": len(body), "accepted": ok, "reason": reason,
+                      "final_url": res.get("final_url") or "",
                       "archive_src": (res.get("headers") or {}).get("x-archive-src", "")})
             tried.append(f"{url} -> {reason or 'ok'}")
             if not ok:
