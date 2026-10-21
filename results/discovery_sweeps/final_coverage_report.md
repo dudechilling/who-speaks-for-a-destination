@@ -1,6 +1,6 @@
 # Final coverage report — CMNS3500-P3-DISCOVERY-02
 
-Date: 2026-10-20. Scope: `research-design.md` (provisional design; not changed).
+Date: 2026-10-20. Scope: `docs/research-design.md` (provisional design; not changed; it was in the repository root until 2026-10-21).
 Sweep reports:
 - `sweep_01_recovery.md`
 - `sweep_02_historical_search.md`

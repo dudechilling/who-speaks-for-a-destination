@@ -7,7 +7,7 @@ Groupings are computed for this report only. They are not written back to the in
 - Document-type group: keyword mapping of the free-text document_type onto the
   document-type list of the task prompt (section 6).
 - Proposed dataset (A language, B governance, C performance): keyword mapping onto
-  the three datasets of research-design.md. A document can map to several datasets.
+  the three datasets of docs/research-design.md. A document can map to several datasets.
   This mapping is a PROVISIONAL coverage heuristic. It is not a coding decision,
   not a sampling decision and not an inclusion decision.
 - Period: five-year bins of the evidenced publication_year; "unknown" when no year

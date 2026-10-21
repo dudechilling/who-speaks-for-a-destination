@@ -23,6 +23,8 @@ import re
 import subprocess
 import sys
 
+# Office documents that are deliberately public (already tracked; the researcher's decision).
+PUBLIC_DOCUMENTS = {"docs/Who speaks for a destination — proposal.docx"}
 ALLOWED_ORIGINALS = {"corpus/originals/source_index.csv", "corpus/originals/authors_public.csv",
                      "corpus/originals/acquisition_log.jsonl"}
 FORBIDDEN = re.compile(r"(^|/)(authors\.csv|methodology\.md)$|\.docx$|^\.discovery_state/|"
@@ -59,6 +61,11 @@ def main():
     files = staged(all_files="--all" in sys.argv[1:])
     for p in files:
         data = blob(p)
+        if p in PUBLIC_DOCUMENTS:
+            if len(data) > 10_000_000:
+                fails.append(f"{p}: larger than 10 MB ({len(data)} bytes)")
+            notes.append(f"{p}: documented public document; path and type checks skipped")
+            continue  # binary Word file: text-pattern scans do not apply
         if p.startswith("corpus/originals/") and p not in ALLOWED_ORIGINALS:
             fails.append(f"{p}: file under corpus/originals is not allowlisted")
         if FORBIDDEN.search(p):

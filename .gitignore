@@ -18,6 +18,9 @@ methodology.md
 *.xlsx
 ~$*
 
+# Public exception: the proposal is already tracked and is kept in docs/.
+!docs/Who speaks for a destination — proposal.docx
+
 # Temporary and machine files.
 __pycache__/
 *.pyc

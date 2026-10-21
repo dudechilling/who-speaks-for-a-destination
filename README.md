@@ -8,7 +8,7 @@ Course project: CMNS 3500 (Power and Language), Thompson Rivers University, Fall
 
 | Stage | Status |
 |---|---|
-| Provisional research design | Written. See [`research-design.md`](research-design.md). It is **not** an approved methodology. |
+| Provisional research design | Written. See [`docs/research-design.md`](docs/research-design.md). It is **not** an approved methodology. |
 | Preliminary source discovery | **Complete** (task CMNS3500-P3-DISCOVERY-01). |
 | Recovery and expansion sweeps | **Complete**: four sweeps (task CMNS3500-P3-DISCOVERY-02). See [`results/discovery_sweeps/final_coverage_report.md`](results/discovery_sweeps/final_coverage_report.md). |
 | Human review of the corpus | **Not started.** No document is approved for the corpus. 1,972 candidates; all `include` cells are blank. |
@@ -40,7 +40,8 @@ The discovery range is 1985–2026.
 
 | Path | Content |
 |---|---|
-| `research-design.md` | Provisional research design. Controls the scope. |
+| `docs/research-design.md` | Provisional research design. Controls the scope. |
+| `docs/Who speaks for a destination — proposal.docx` | Project proposal (Word document). |
 | `corpus/originals/source_index.csv` | Discovery register: 1,972 candidate documents with provenance (after DISCOVERY-02). |
 | `corpus/originals/authors_public.csv` | Public-release copy of the author index: 1,526 name occurrences (authors, signatories, editors, executives, board chairs) taken from collected documents. |
 | `results/discovery_summary.md` | Discovery report: counts, methods, names, gaps, access limits, technical decisions. |
@@ -82,8 +83,9 @@ Every row in `source_index.csv` is a **candidate**. No row is approved.
 | Extracted source text and OCR output (`corpus/derived/`) | Full text of third-party documents. Not published without permission. |
 | Controller state (`.discovery_state/`) | Private local agent state. |
 | `corpus/originals/authors.csv` | Canonical author index. It quotes contact details from documents; the public copy above removes them. |
-| `methodology.md` | Unapproved early draft. It is not the project methodology. |
-| Draft proposal (`.docx`) and office files | Drafts. The draft proposal includes third-party images. |
+| `docs/methodology.md` | Unapproved early draft. It is not the project methodology. Kept local only. |
+| Corpus review workbook (`docs/*.xlsx`) | The researcher's screening decisions and notes. Kept local only unless the researcher authorizes publication. |
+| Other office files and drafts | Drafts. The proposal above is the only office document that is published. |
 
 Each `local_file` path in the index points to the copy on the m710. That file is not in this repository.
 

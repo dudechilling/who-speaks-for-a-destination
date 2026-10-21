@@ -3,7 +3,7 @@
 Task: preliminary historical source discovery.
 Execution date: 2026-10-20 (UTC).
 Prompt record: `prompts/20261020-030936_CMNS3500-P3-DISCOVERY-01.md`.
-Controlling scope: `research-design.md` (not changed).
+Controlling scope: `docs/research-design.md` (not changed; it was in the repository root until 2026-10-21).
 
 This report describes source **availability only**. It contains no SFL coding, no CDA and no historical interpretation. It does not select a corpus. The historical record is **not** complete. A failed search is not proof that a document does not exist.
 
