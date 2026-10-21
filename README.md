@@ -53,6 +53,7 @@ The discovery range is 1985–2026.
 | `scripts/make_public_authors.py`, `scripts/prepublish_check.py` | Public author copy and the privacy/secrets check run before every commit. |
 | `scripts/build_review_packets.py`, `scripts/ocr_first_pages.py`, `scripts/apply_sweep3.py` | Sweep-3 date and name review: packets, selective OCR, and machine-checked application of agent claims. |
 | `scripts/verify_wayback_captures.py`, `scripts/apply_corrections.py` | Sweep-4 capture-date verification by digest and documented metadata corrections. |
+| `scripts/repair_review_workbook.py`, `scripts/validate_review_workbook.py` | Repair and check the document links of the local corpus review workbook. The workbook itself is not published. |
 | `scripts/polite_fetch.py` | Rate-limited HTTP fetch helper. |
 | `scripts/collect.py` | Downloads candidates, checks file type and checksum, and writes the source index. |
 | `prompts/` | Prompt records for each authorized task, saved word for word before execution. |
@@ -86,6 +87,8 @@ Every row in `source_index.csv` is a **candidate**. No row is approved.
 | `docs/methodology.md` | Unapproved early draft. It is not the project methodology. Kept local only. |
 | Corpus review workbook (`docs/*.xlsx`) | The researcher's screening decisions and notes. Kept local only unless the researcher authorizes publication. |
 | Other office files and drafts | Drafts. The proposal above is the only office document that is published. |
+
+`docs/` holds project documents. It is not a GitHub Pages source. Any future website needs its own separate publishing configuration.
 
 Each `local_file` path in the index points to the copy on the m710. That file is not in this repository.
 
