@@ -1,6 +1,6 @@
 # Who speaks for a destination?
 
-**Research status — 2026-11-09:** Revised institutional-language methodology and ten-source register are public. Machine coding is complete locally, but human adjudication and permission to release the complete full-text workbook remain open.
+**Research status — 2026-11-09:** Revised institutional-language methodology, ten-source register and the [public coded corpus](RDMO_about_coding_review.xlsx) are available. All 194 proposed clause classifications remain **pending human review**.
 
 This CMNS 3500 project asks how five British Columbia regional destination marketing organizations explain what they are, what they do, whom they represent or benefit, and the responsibilities or institutional authority they claim.
 
@@ -12,9 +12,9 @@ Each eligible institutional explanation was read before clause segmentation. A r
 
 The workbook proposes only two SFL metafunctions: ideational process type and primary grammatical participant, plus interpersonal modality. A short representation note records what the page says about representation, service, inclusion, or benefit. It does not establish actual board composition, membership rights, voting rights, governance arrangements, or decision-making authority.
 
-The canonical `RDMO_about_coding.xlsx` workbook is complete **locally** (194 machine-coded clauses across ten source worksheets, all `pending_human_review`). It is not yet published here because redistribution of the source text has not been cleared. The workbook remains available for human review on the m710; no coding is represented as approved.
+The [**RDMO_about_coding_review.xlsx**](RDMO_about_coding_review.xlsx) workbook is the public, machine-coded corpus: 194 clause rows across ten document worksheets and an Index. Its `original_clause` values reproduce selected website text; `normalized_clause` gives the deterministic transformation. All codes are proposals, not reviewed research findings. The published file is a byte-identical copy of the original Codex workbook, not a revised/adjudicated dataset. The `review` filename identifies its intended use, **not** an already-completed review.
 
-The complete workbook remains preserved locally in the task-owned worktree and an independent review copy; it is not publicly released yet. The source review found no documented basis for distributing all reproduced webpage clauses worldwide in a public XLSX: current Northern BC and Kootenay Rockies terms expressly restrict copying or redistribution, and the other sites did not provide an applicable redistribution grant in the reviewed material. The exact captures remain private. Public release requires documented permission, an applicable license, or a case-specific fair-dealing decision that covers the complete workbook; it must not be replaced with an altered corpus.
+**Source-text rights:** The corpus is published for non-commercial academic research and auditability under a documented, case-specific Canadian fair-dealing rationale ([methodology](methodology.md#publication-and-fair-dealing-assessment)). This is an assessment, not a licence from the original publishers or a guarantee against a copyright challenge. Worldwide availability weighs against fairness; original site terms and other rights may also apply. The quoted language belongs to its original publishers. No permission to reuse their text is granted by this repository. Every source is attributed and linked in [corpus/sources.csv](corpus/sources.csv) and the workbook Index. Full HTML captures remain private.
 
 The historical/contemporary pairings are linguistic comparisons, not proof of legal continuity. The historical Cariboo page names the Cariboo Tourism Association; the current page distinguishes development/sustainability and marketing associations. The Vancouver Island current page uses 4TVI within the 4VI Group. Those distinctions remain explicit rather than resolved by assumption.
 
