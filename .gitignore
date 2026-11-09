@@ -1,40 +1,16 @@
-# Downloaded third-party originals: kept on the m710 only, never redistributed.
-# Public: source_index.csv and the public-release author copy only.
-# authors.csv (canonical, contains contact details quoted from documents) stays local.
-corpus/originals/**
-!corpus/originals/
-!corpus/originals/source_index.csv
-!corpus/originals/authors_public.csv
-!corpus/originals/acquisition_log.jsonl
-
-# Extracted or normalized source text: not published without permission.
+# Third-party raw and transformed captures remain private.
+corpus/originals/
 corpus/treated/
-
-# Unapproved draft methodology (not final; superseded by the approval process).
-methodology.md
-
-# Drafts, office documents and lock files.
-*.docx
-*.xlsx
-~$*
-
-# Public exception: the proposal is already tracked and is kept in docs/.
-!docs/Who speaks for a destination — proposal.docx
-
-# Temporary and machine files.
-__pycache__/
-*.pyc
-*.part
-.*.part
-*.tmp
-.DS_Store
-
-# Local controller state, locks and agent working files (private; never published).
-.discovery_state/
-.source_index.lock
-
-# Derived OCR and extracted text (source text; not published).
 corpus/derived/
 
-# Prompt record that quotes a removed personal phone number verbatim (local only).
-prompts/20261020-210944_CMNS3500-P3-HISTORY-REWRITE.md
+# Office artifacts and local state.
+*.docx
+*.xlsx
+!RDMO_about_coding.xlsx
+~$*
+__pycache__/
+*.pyc
+*.tmp
+*.part
+.DS_Store
+.discovery_state/
