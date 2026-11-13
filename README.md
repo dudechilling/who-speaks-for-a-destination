@@ -1,5 +1,16 @@
 # Who speaks for a destination?
 
+## Mini-site and private human review — 2026-11-13
+
+**Public exhibit:** [Who speaks for a destination?](https://dudechilling.github.io/who-speaks-for-a-destination/) is built from the static source-safe files in [site/](site/). The public exhibit currently presents source metadata, research scope and methodology, **not researcher-approved linguistic or governance findings**. GitHub Pages must be configured to deploy from GitHub Actions for the website to become available.
+
+**Private adjudicator:** The authenticated application in [review/](review/) reads the current local `RDMO_About_Page_Coding.xlsx` workbook directly on Alfred and keeps human decisions outside this repository. Its review URL is [Alfred tailnet-only review](https://alfred.tail41f62a.ts.net:8444/); it is not a publicly accessible GitHub Pages route.
+
+The current local workbook includes **414 retained text elements across ten About pages** with AI-proposed codes, all pending human confirmation. It supersedes the earlier public 194-clause workbook for the current review workflow. The older `RDMO_about_coding_review.xlsx` and `corpus/sources.csv` below remain preserved as the **2026-11-09 historical research snapshot**; in particular, the corrected 1998 Kootenay Rockies and January 2002 Vancouver Island baselines are reflected in the local current workbook, not those legacy files. No current source wording, review ledger or reviewer decisions are distributed in the Pages artifact.
+
+---
+
+
 **Research status — 2026-11-09:** Revised institutional-language methodology, ten-source register and the [public coded corpus](RDMO_about_coding_review.xlsx) are available. All 194 proposed clause classifications remain **pending human review**.
 
 This CMNS 3500 project asks how five British Columbia regional destination marketing organizations explain what they are, what they do, whom they represent or benefit, and the responsibilities or institutional authority they claim.
