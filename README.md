@@ -1,12 +1,16 @@
 # Who speaks for a destination?
 
-## Mini-site and private human review — 2026-11-13
+## Unified research mini-site — 2026-11-13
 
-**Public exhibit:** [Who speaks for a destination?](https://dudechilling.github.io/who-speaks-for-a-destination/) is built from the static source-safe files in [site/](site/). The public exhibit currently presents source metadata, research scope and methodology, **not researcher-approved linguistic or governance findings**. GitHub Pages must be configured to deploy from GitHub Actions for the website to become available.
+**Live full-screen atlas:** https://dudechilling.github.io/who-speaks-for-a-destination/
 
-**Private adjudicator:** The authenticated application in [review/](review/) reads the current local `RDMO_About_Page_Coding.xlsx` workbook directly on Alfred and keeps human decisions outside this repository. Its review URL is [Alfred tailnet-only review](https://alfred.tail41f62a.ts.net:8444/); it is not a publicly accessible GitHub Pages route.
+The public site in [site/](site/) reuses the full-viewport composition of the earlier Power-and-Language prototype: a home carousel, five RDMO region views, Language, Governance, Corpus and an integrated [Adjudicator](https://dudechilling.github.io/who-speaks-for-a-destination/#adjudicator). Navigation stays inside the viewport. Only verified source metadata and explicitly publication-cleared approved material appear publicly. The initial `site/data/approved.json` is empty.
 
-The current local workbook includes **414 retained text elements across ten About pages** with AI-proposed codes, all pending human confirmation. It supersedes the earlier public 194-clause workbook for the current review workflow. The older `RDMO_about_coding_review.xlsx` and `corpus/sources.csv` below remain preserved as the **2026-11-09 historical research snapshot**; in particular, the corrected 1998 Kootenay Rockies and January 2002 Vancouver Island baselines are reflected in the local current workbook, not those legacy files. No current source wording, review ledger or reviewer decisions are distributed in the Pages artifact.
+**Owner review:** Select **Connect researcher mode** from the public Adjudicator while connected to Alfred's tailnet. The authenticated API at [Alfred's private reviewer](https://alfred.tail41f62a.ts.net:8444/) loads the **live local** `RDMO_About_Page_Coding.xlsx`, currently 414 extracted elements and pending machine-proposed codes across ten historical/contemporary About pages. Source verification, edited fields, approvals/rejections and audit history are held privately on Alfred, independently of the original workbook. The owner exports a reviewed workbook without changing the canonical file. Browser access to the tailnet may require permission. See [review/README.md](review/README.md) for the private service and [review/update-alfred.sh](review/update-alfred.sh) for the supervised manual upgrade.
+
+**Visitor review:** Anyone may use an offline local working copy of published reference rows, add text, change classifications and export/import JSON or CSV. Visitors cannot change the reference dataset or access Alfred's private workbook. Their approval does **not** constitute researcher adjudication. New owner-reviewed text requires a separate explicit rights/provenance clearance and publication step; saving a row never automatically commits it to GitHub.
+
+**Earlier research snapshot:** The original `RDMO_about_coding_review.xlsx` and `corpus/sources.csv` remain as the November 9 research snapshot with 194 pending clauses. They are **not** the authoritative source of the current 414-row private review. The amended historic sources include the December 5, 1998 Kootenay Rockies and January 29, 2002 Vancouver Island About pages. The earlier notes below describe the preserved snapshot rather than current site behaviour.
 
 ---
 
