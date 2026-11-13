@@ -1,18 +1,27 @@
 # Who speaks for a destination?
 
-## Unified research mini-site — 2026-11-13
+## Prototype-led, workbook-backed research atlas — 2026-11-13
 
-**Live full-screen atlas:** https://dudechilling.github.io/who-speaks-for-a-destination/
+**Public site:** https://dudechilling.github.io/who-speaks-for-a-destination/
 
-The public site in [site/](site/) reuses the full-viewport composition of the earlier Power-and-Language prototype: a home carousel, five RDMO region views, Language, Governance, Corpus and an integrated [Adjudicator](https://dudechilling.github.io/who-speaks-for-a-destination/#adjudicator). Navigation stays inside the viewport. Only verified source metadata and explicitly publication-cleared approved material appear publicly. The initial `site/data/approved.json` is empty.
+The site adapts the original [Power-and-Language](https://github.com/dudechilling/Power-and-Language) editorial prototype rather than replacing its interface. It retains the Home carousel, original B.C. tourism-region map, region tabs, Language panels, Governance board roster, Corpus view, source modal and navigation dock. The sixth official geographic region, Vancouver, Coast & Mountains, is outside the five-region research sample.
 
-**Owner review:** Select **Connect researcher mode** from the public Adjudicator while connected to Alfred's tailnet. The authenticated API at [Alfred's private reviewer](https://alfred.tail41f62a.ts.net:8444/) loads the **live local** `RDMO_About_Page_Coding.xlsx`, currently 414 extracted elements and pending machine-proposed codes across ten historical/contemporary About pages. Source verification, edited fields, approvals/rejections and audit history are held privately on Alfred, independently of the original workbook. The owner exports a reviewed workbook without changing the canonical file. Browser access to the tailnet may require permission. See [review/README.md](review/README.md) for the private service and [review/update-alfred.sh](review/update-alfred.sh) for the supervised manual upgrade.
+**Two independent workbook sources:**
 
-**Visitor review:** Anyone may use an offline local working copy of published reference rows, add text, change classifications and export/import JSON or CSV. Visitors cannot change the reference dataset or access Alfred's private workbook. Their approval does **not** constitute researcher adjudication. New owner-reviewed text requires a separate explicit rights/provenance clearance and publication step; saving a row never automatically commits it to GitHub.
+- **Language:** The current public default is [RDMO_about_coding_review.xlsx](RDMO_about_coding_review.xlsx), with 10 source pages and 194 AI-proposed clauses, all pending human confirmation. The Language page reads the current GitHub copy automatically; the **Import Language XLSX** control locally replaces the workbook in the browser and derives the year timeline, excerpts and categorical counts from its source records. The larger local 414-element workbook is not published by this site.
+- **Governance:** [governance.xlsx](governance.xlsx) is a separate, deliberately empty evidence template, with `Board`, `Sources` and `README` sheets. The Governance page reads the GitHub copy or a locally imported workbook. It displays only independently verified board entries as composition findings; unverified and missing records are never fabricated.
 
-**Earlier research snapshot:** The original `RDMO_about_coding_review.xlsx` and `corpus/sources.csv` remain as the November 9 research snapshot with 194 pending clauses. They are **not** the authoritative source of the current 414-row private review. The amended historic sources include the December 5, 1998 Kootenay Rockies and January 29, 2002 Vancouver Island About pages. The earlier notes below describe the preserved snapshot rather than current site behaviour.
+Timeline years reflect available **source or capture observations**, not established publication dates, uninterrupted organizational continuity or inferred board tenure. New dated evidence adds years automatically without editing website code. Missing coverage remains visible as a gap.
+
+**Adjudicator:** Public visitor edits and approvals remain personal local work, separate from the GitHub reference. Authenticated researcher decisions require the privately hosted Alfred review API and its separate service upgrade. Neither XLSX import nor row approval automatically publishes research material or changes the canonical workbook.
+
+**Publication and rights:** The existing public language workbook contains third-party source excerpts accompanied by a residual Canadian fair-dealing and permission risk. No new unpublished captures or the private 414-row workbook are committed here. Review rights and provenance before publishing further passages.
+
+The publication workflow stages the root language and governance workbooks for GitHub Pages and uses a SHA-256-pinned SheetJS browser parser. See `site/app.js` and `site/tests/atlas.test.mjs`.
 
 ---
+
+### Historical research snapshot (2026-11-09)
 
 
 **Research status — 2026-11-09:** Revised institutional-language methodology, ten-source register and the [public coded corpus](RDMO_about_coding_review.xlsx) are available. All 194 proposed clause classifications remain **pending human review**.

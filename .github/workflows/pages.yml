@@ -1,4 +1,4 @@
-name: Deploy Pages
+name: Deploy research atlas
 on:
   push:
     branches: [main]
@@ -20,20 +20,35 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '22'
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Verify static atlas
+      - name: Stage independent published workbooks
         run: |
+          test -f RDMO_about_coding_review.xlsx
+          test -f governance.xlsx
+          mkdir -p site/data site/vendor
+          cp RDMO_about_coding_review.xlsx site/data/language.xlsx
+          cp governance.xlsx site/data/governance.xlsx
+          curl -fsSL --retry 3 -m 45 https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js -o site/vendor/xlsx.full.min.js
+          printf '%s\n' 'cc015130aa8521e7f088f88898eba949ccdcbfb38df0bd129b44b7273c3a6f41  site/vendor/xlsx.full.min.js' | sha256sum -c -
+      - name: Verify governed workbook and prototype
+        run: |
+          python -m pip install 'openpyxl>=3.1.5,<4'
+          python - <<'PY'
+          import openpyxl
+          book = openpyxl.load_workbook('governance.xlsx', read_only=True, data_only=True)
+          assert book.sheetnames == ['README', 'Board', 'Sources']
+          board = ['record_id', 'organization', 'record_date', 'member_name', 'role', 'affiliation', 'sector', 'source_id', 'source_url', 'verification_status', 'notes']
+          sources = ['source_id', 'organization', 'title', 'document_date', 'capture_date', 'source_url', 'publisher', 'verification_status', 'notes']
+          assert [c.value for c in next(book['Board'].rows)][:len(board)] == board
+          assert [c.value for c in next(book['Sources'].rows)][:len(sources)] == sources
+          book.close()
+          PY
           node --check site/app.js
-          node --test site/tests/app.test.mjs
-          python -m json.tool site/data/sources.json >/dev/null
-          python -m json.tool site/data/approved.json >/dev/null
-      - name: Verify private reviewer using synthetic fixtures
-        run: |
-          python -m pip install -r review/requirements.txt
-          python -m unittest discover -s review/tests -v
+          node --test site/tests/*.mjs
+          if grep -R -qi 'lorem ipsum' site/content; then echo 'Placeholder text found'; exit 1; fi
       - uses: actions/configure-pages@v5
         with:
           enablement: true

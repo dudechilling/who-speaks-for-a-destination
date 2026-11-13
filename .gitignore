@@ -14,3 +14,12 @@ __pycache__/
 *.part
 .DS_Store
 .discovery_state/
+
+# The two explicitly public workbook sources may be tracked.
+!RDMO_about_coding_review.xlsx
+!governance.xlsx
+
+# Browser-distributed copies and parser are generated only in Pages Actions.
+site/data/language.xlsx
+site/data/governance.xlsx
+site/vendor/xlsx.full.min.js

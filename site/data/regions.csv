@@ -1,0 +1,7 @@
+id,name,short,office,marker_lon,marker_lat
+"island","Vancouver Island","VANCOUVER ISLAND","Victoria","-125.1","49.9"
+"thompson","Thompson Okanagan","THOMPSON OKANAGAN","Kamloops","-120.4","50.5"
+"kootenay","Kootenay Rockies","KOOTENAY ROCKIES","Nelson","-116.3","50.1"
+"northern","Northern BC","NORTHERN BC","Prince George","-125.7","56.3"
+"cariboo","Cariboo Chilcotin Coast","CARIBOO CHILCOTIN COAST","Williams Lake","-124.6","53.3"
+"vcm","Vancouver, Coast & Mountains","VANCOUVER COAST & MOUNTAINS","Vancouver","-123.3","50.6"

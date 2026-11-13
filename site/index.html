@@ -1,3 +1,36 @@
-<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f5f3e7"><title>Who speaks for a destination?</title><link rel="stylesheet" href="styles.css"></head>
-<body><a class="skip" href="#view">Skip to content</a><div class="shell"><main id="view" tabindex="-1" aria-live="polite"></main><footer><small id="hint">FIG. 01 / HOME</small><div class="dock-wrap"><b>Explore<br>the data</b><nav id="dock" aria-label="Research atlas navigation"><a href="#rdmos" data-route="rdmos">⌖<span>RDMOs</span></a><a href="#language" data-route="language">◫<span>Language</span></a><a href="#governance" data-route="governance">♧<span>Governance</span></a><a href="#corpus" data-route="corpus">▤<span>Corpus</span></a><a href="#adjudicator" data-route="adjudicator">✓<span>Adjudicator</span></a><a href="#home" data-route="home">⌂<span>Home</span></a></nav></div></footer></div><script src="app.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f5f3e7">
+<meta name="description" content="Who speaks for a destination? Interactive research prototype.">
+<title>Who speaks for a destination? | Research prototype</title>
+<link rel="stylesheet" href="./styles.css">
+<script defer src="./vendor/xlsx.full.min.js"></script>
+<script defer src="./app.js"></script>
+</head>
+<body>
+<a class="skip" href="#view">Skip to content</a>
+<div class="app-shell">
+  <main id="view" class="canvas" tabindex="-1" aria-live="polite"></main>
+  <footer class="bottom-shell">
+    <div class="bottom-note"><span id="footer-hint">FIG. 01 <i>—</i> RESEARCH PROTOTYPE</span><span class="bottom-subnote terrain-credit">CONTOUR ILLUSTRATION: POWER & LANGUAGE · WORKBOOK-DERIVED</span></div>
+    <div class="dock-wrap"><div class="dock-caption" aria-hidden="true">Explore<br>the data</div><nav class="dock" aria-label="Main navigation" id="dock">
+      <a href="#profiles" data-route="profiles" aria-label="Profiles"><span class="dock-icon" data-icon="map"></span><span>Profiles</span></a>
+      <a href="#language" data-route="language" aria-label="Language"><span class="dock-icon" data-icon="speech"></span><span>Language</span></a>
+      <a href="#governance" data-route="governance" aria-label="Governance"><span class="dock-icon" data-icon="governance"></span><span>Governance</span></a>
+      <a href="#adjudicator" data-route="adjudicator" aria-label="Adjudicator"><span class="dock-icon" data-icon="performance"></span><span>Adjudicator</span></a>
+      <a href="#corpus" data-route="corpus" aria-label="Corpus"><span class="dock-icon" data-icon="document"></span><span>Corpus</span></a>
+      <a href="#home" data-route="home" aria-label="Home"><span class="dock-icon" data-icon="home"></span><span>Home</span></a>
+    </nav></div>
+  </footer>
+</div>
+<div class="modal-backdrop" id="sources-modal" hidden aria-hidden="true">
+ <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <header class="modal-head"><div><span class="micro">SOURCE DOCUMENTS / SELECTED PERIOD</span><h2 id="modal-title">The source register.</h2></div><button type="button" class="close-modal" aria-label="Close source documents">×</button></header>
+  <div id="modal-body" class="modal-body"></div>
+  <footer class="modal-foot"><span>WORKBOOK RECORDS / REVIEW STATUS SHOWN</span><a class="dark-action" href="#corpus" id="all-corpus-link">SEE THE WHOLE CORPUS ↗</a></footer>
+ </section>
+</div>
+</body></html>
