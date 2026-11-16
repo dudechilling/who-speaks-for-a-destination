@@ -131,3 +131,35 @@ test('Global AI disclosure links to an explicitly labelled placeholder page',()=
  assert.match(page,/href="#ai-disclosure"/);
  assert.match(disclosure,/Editorial placeholder/);
 });
+
+test('tooltip definitions teach process types and participants without editorial caveats',()=>{
+  const source=fs.readFileSync(new URL('../refinements.js',import.meta.url),'utf8');
+  const start=source.indexOf('const definitions=Object.freeze({');
+  const end=source.indexOf('function definitionButton(key)',start);
+  const definitions=source.slice(start,end);
+  for(const word of ['Material:','Relational:','Verbal:','Mental:','Existential:','Behavioural:'])
+    assert.ok(definitions.includes(word),word);
+  assert.match(definitions,/Active voice places the actor/);
+  assert.match(definitions,/“May” suggests possibility/);
+  assert.doesNotMatch(definitions,/machine|AI proposal|model.proposed|not evidence|not verified/i);
+});
+test('Profiles masthead and connected regional tabs use the same styles across routes',()=>{
+  const reading=fs.readFileSync(new URL('../reading-layout.js',import.meta.url),'utf8');
+  const css=fs.readFileSync(new URL('../refinements.css',import.meta.url),'utf8');
+  const app=fs.readFileSync(new URL('../app.js',import.meta.url),'utf8');
+  assert.match(reading,/function readingTabs\(\)\s*\{[^}]*return tabs\(\)/);
+  assert.match(css,/#view \.rdmo-tabs/);
+  assert.match(css,/#view \.rdmo-tabs \.region-button/);
+  assert.match(css,/\.page-head,\.home-head,\.reading-heading,\.governance-reading-heading/);
+  assert.match(app,/carouselDirection=next<state\.slide\?'prev':'next'/);
+  assert.match(css,/@keyframes home-slide-forward/);
+  assert.match(css,/@keyframes home-slide-backward/);
+  assert.match(css, /prefers-reduced-motion:reduce/);
+});
+test('AI disclosure uses the linked orbit emblem rather than the old information badge',()=>{
+  const html=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
+  assert.match(html,/<svg class="ai-disclosure-icon"/);
+  assert.equal((html.match(/<ellipse cx="40"/g)||[]).length,3);
+  assert.match(html,/<text x="40" y="46"[^>]*>AI<\/text>/);
+  assert.doesNotMatch(html,/<span class="ai-disclosure-icon"/);
+});

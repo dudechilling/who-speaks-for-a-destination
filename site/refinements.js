@@ -14,18 +14,18 @@
   let themeModalSelection = null;
 
   const definitions=Object.freeze({
-    process_type:'Systemic functional linguistics process type: whether a clause depicts doing, being, sensing, saying or another kind of process. A proposal is not yet an accepted finding.',
-    process:'Process categories indicate what kind of experience the clause represents. These are machine-proposed counts.',
-    actor:'Primary grammatical actor or participant; not evidence of formal authority.',
-    affected_participant:'Participant acted upon or affected in the clause. Merely naming an organization or community is not enough.',
-    named_groups:'Text-matching cues for named groups in source passages, not verified beneficiaries or affected participants.',
-    priorities:'Text-matching cues for activities and goals, not independently established institutional priorities.',
-    agency_voice:'Active/passive grammatical voice, only when explicitly coded. Free-text representation notes do not qualify.',
-    modality:'Expressions of possibility, frequency, obligation or inclination. Fields coded none are omitted.',
-    institutional_priority:'Proposed coding of an institutional aim; self-description is not verified performance.',
-    social_actor_representation:'How people or organizations are named or positioned in the source wording.',
-    annotations:'Coding rationale or research note rather than an established finding.',
-    corpus:'A source register extracted from the current Language and Governance workbooks. Local imports do not publish.'
+    process_type:'A process describes what happens in a clause. Material: doing or changing something (build, fund). Relational: being, having or identifying (is, has). Verbal: saying or reporting (states, announces). Mental: thinking, feeling or perceiving (believes, notices). Existential: something exists (there is). Behavioural: an observable human response (laughs, watches).',
+    process:'Process types classify how language represents experience: material means doing (build), relational means being or having (is, has), verbal means saying (announces), and mental means sensing or thinking (believes). Existential describes existence; behavioural describes human behaviour.',
+    actor:'The person, group or thing presented as carrying out an action. In “The organization supports local operators,” the organization is the actor.',
+    affected_participant:'The person, group or thing receiving an action or experiencing its effect. In “The organization supports local operators,” local operators are affected participants.',
+    named_groups:'People and groups named in the passage, such as visitors, tourism operators, residents, communities and First Nations. These categories show how often related terms appear.',
+    priorities:'Goals and activities expressed in the wording, such as attracting visitors, supporting businesses or protecting the environment. Compare what each organization emphasizes.',
+    agency_voice:'Active voice places the actor in the foreground: “The organization funds projects.” Passive voice foregrounds the action or recipient: “Projects are funded.” Compare who is named and who is left unstated.',
+    modality:'Language expressing possibility, certainty, permission or obligation. “May” suggests possibility; “will” indicates commitment; “must” expresses obligation.',
+    institutional_priority:'A goal or activity the organization presents as important, such as destination marketing, industry support or stewardship.',
+    social_actor_representation:'How people and groups are described: by name, role, membership, collective identity or relationship to the organization.',
+    annotations:'Notes explaining how a passage was interpreted or why a grammatical category was chosen.',
+    corpus:'A register of the webpages, capture years and organizations used in the study.'
   });
   function definitionButton(key){
     return definitions[key]?'<button class="definition-trigger" type="button" data-definition="'+esc(key)+'" aria-label="Explain '+esc(key.replaceAll('_',' '))+'" aria-expanded="false">?</button>':'';

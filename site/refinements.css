@@ -270,3 +270,108 @@
  .governance-date-strip{margin:0 0 8px}
 }
 
+
+/* Shared page masthead: Profiles is the single layout reference. */
+#view :is(.page-head,.home-head,.reading-heading,.governance-reading-heading){
+  min-height:clamp(160px,19vh,196px)!important;
+  padding:clamp(9px,1.45vh,16px) 0 12px!important;
+  align-items:flex-start!important;
+  justify-content:space-between;
+}
+#view :is(.page-head,.home-head,.reading-heading,.governance-reading-heading) .page-title{
+  font-size:clamp(46px,5.15vw,79px)!important;
+  line-height:.93!important;
+  letter-spacing:-.045em!important;
+}
+#view :is(.page-head,.home-head,.reading-heading,.governance-reading-heading) .page-subtitle{
+  font-size:clamp(14px,1.35vw,20px)!important;
+  line-height:1.25!important;
+}
+#view :is(.reading-heading,.governance-reading-heading) .reading-workbook-details{
+  align-self:flex-end;
+  margin:0 0 7px auto;
+}
+
+/* One connected regional tab strip, identical on Profiles, Language, Governance and Adjudicator. */
+#view .rdmo-tabs{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:0;
+  margin:0 0 8px;
+  flex:0 0 auto;
+}
+#view .rdmo-tabs .region-button,
+#view:has(.profile-body) .rdmo-tabs .region-button{
+  min-height:33px;
+  height:33px;
+  padding:5px 10px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-size:clamp(11px,.88vw,14px);
+  line-height:1.1;
+  border-right:1px solid #bbc9b7;
+}
+#view .rdmo-tabs .region-button:last-child{border-right:0}
+
+/* Inline clauses wrap in running prose rather than behaving as indivisible buttons. */
+.reading-flow .reading-highlight[role="button"]{
+  display:inline;
+  white-space:normal;
+  overflow-wrap:break-word;
+  box-decoration-break:clone;
+  -webkit-box-decoration-break:clone;
+  cursor:pointer;
+}
+.reading-flow .reading-highlight[role="button"]:focus-visible{
+  outline:2px solid #ba755a;
+  outline-offset:2px;
+}
+
+/* Home panel: directional translation and crossfade on each actual slide change. */
+.carousel-wrap{overflow:hidden}
+.slide-panel.slide-enter-next{animation:home-slide-forward .42s cubic-bezier(.22,.61,.36,1) both}
+.slide-panel.slide-enter-prev{animation:home-slide-backward .42s cubic-bezier(.22,.61,.36,1) both}
+@keyframes home-slide-forward{
+  from{opacity:.35;transform:translateX(25px)}
+  to{opacity:1;transform:translateX(0)}
+}
+@keyframes home-slide-backward{
+  from{opacity:.35;transform:translateX(-25px)}
+  to{opacity:1;transform:translateX(0)}
+}
+
+/* Orbit-style AI disclosure emblem follows the link colour and scales responsively. */
+.ai-disclosure-link .ai-disclosure-icon{
+  display:block;
+  flex:0 0 auto;
+  width:32px;
+  height:32px;
+  min-width:32px;
+  border:0;
+  padding:0;
+  border-radius:0;
+  background:transparent;
+  overflow:visible;
+}
+.ai-disclosure-link:hover .ai-disclosure-icon{color:#b97060}
+@media(max-width:850px){
+  #view .rdmo-tabs{display:flex;overflow-x:auto;scrollbar-width:thin}
+  #view .rdmo-tabs .region-button{flex:0 0 146px;min-width:146px}
+}
+@media(max-width:620px){
+  #view :is(.page-head,.home-head,.reading-heading,.governance-reading-heading){
+    min-height:115px!important;
+    padding:6px 0!important;
+  }
+  #view :is(.page-head,.home-head,.reading-heading,.governance-reading-heading) .page-title{
+    font-size:clamp(32px,7vw,43px)!important;
+  }
+  #view :is(.page-head,.home-head,.reading-heading,.governance-reading-heading) .page-subtitle{
+    font-size:11px!important;
+  }
+  .ai-disclosure-link .ai-disclosure-icon{width:26px;height:26px;min-width:26px}
+}
+@media(prefers-reduced-motion:reduce){
+  .slide-panel.slide-enter-next,.slide-panel.slide-enter-prev{animation:none}
+}

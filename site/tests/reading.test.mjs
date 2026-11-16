@@ -9,6 +9,7 @@ function setup(extra = {}) {
     window: {},
     URL,
     document: { addEventListener() {} },
+    tabs:()=>'<nav class="rdmo-tabs" aria-label="Choose a B.C. tourism region"></nav>',
     esc: v => String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;'),
     safeUrl: v => /^https?:\/\//.test(String(v)) ? String(v) : '',
     R: [['island','Vancouver Island'],['kootenay','Kootenay Rockies']],
@@ -156,4 +157,19 @@ test('review year follows its own capture date, not another source year', () => 
   assert.equal(c.window.ReadingViews.readingReviewRows()[0].row_id,'KR-H-001');
   assert.match(c.readingTimeline(true),/1998/);
   assert.match(c.readingTimeline(true),/review-time-slider/);
+});
+
+test('same-paragraph clauses remain in one flowing paragraph with keyboard-selectable inline text',()=>{
+  const c=setup();
+  const html=c.readingHighlightRows([
+    {id:'VI-H-001',source:'VI-H',block_id:'P1',text:'The organization describes its mission.',process:'relational'},
+    {id:'VI-H-002',source:'VI-H',block_id:'P1',text:'It supports local tourism.',process:'material'},
+    {id:'VI-H-003',source:'VI-H',block_id:'P2',text:'A new paragraph follows.',process:'relational'}
+  ],null,false);
+  assert.equal((html.match(/<p>/g)||[]).length,2);
+  assert.match(html,/<span role="button" tabindex="0"[^>]*data-excerpt="VI-H-001"[^>]*>The organization describes its mission\.<\/span> <span role="button" tabindex="0"[^>]*data-excerpt="VI-H-002"/);
+  assert.doesNotMatch(html,/<button[^>]*data-excerpt=/);
+  assert.match(js,/event\.key!=='Enter'&&event\.key!==' '/);
+  assert.match(js,/clause\.click\(\)/);
+  assert.equal(c.readingTabs(),c.tabs());
 });

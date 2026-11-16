@@ -63,9 +63,8 @@ function readingSourceTools(reviewMode) {
     '</div></details>';
 }
 function readingTabs() {
-  return '<nav class="reading-region-tabs" aria-label="Choose a regional tourism organization">' +
-    R.map(pair => '<button type="button" data-region="' + esc(pair[0]) + '" aria-pressed="' + (pair[0] === state.region) + '">' + esc(pair[1]) + '</button>').join('') +
-    '</nav>';
+  // Share the same region controls with the Profiles page.
+  return tabs();
 }
 
 function readingSourceBlockKey(item) {
@@ -105,8 +104,8 @@ function readingHighlightRows(rows, selectedId, reviewMode) {
     const category=readingProcessKey(reviewMode?(item.draft?.process_type||item.original?.process_type||''):item.process);
     const visible=String(content).trim();
     const full=String(reviewMode?(item.verbatim_text||item.text||''):item.text||'').trim();
-    return '<button type="button" class="reading-highlight reading-highlight--'+category+'" '+
-      field+'="'+esc(id)+'" aria-pressed="'+(id===selectedId)+'" aria-label="'+esc(full)+'" title="'+esc(READING_PROCESS_NAMES[category])+'">'+esc(visible)+'</button>';
+    return '<span role="button" tabindex="0" class="reading-highlight reading-highlight--'+category+'" '+
+      field+'="'+esc(id)+'" aria-pressed="'+(id===selectedId)+'" aria-label="'+esc(full)+'" title="'+esc(READING_PROCESS_NAMES[category])+'">'+esc(visible)+'</span>';
   }
   function addList(item,content,number=null,bullet=false) {
     const kind=bullet?'ul':'ol';
@@ -323,5 +322,13 @@ document.addEventListener('change', event => {
   if(event.target.id==='review-time-slider'){ state.year=readingReviewYears()[Number(event.target.value)]??null;state.selected=null;render(); }
   if(event.target.id==='source-checked') readingSourceVerified=event.target.checked;
   if(event.target.id==='recoded') readingRecoded=event.target.checked;
+},true);
+// Inline text wraps naturally while Enter and Space activate its clause selection.
+document.addEventListener('keydown', event => {
+  if(event.key!=='Enter'&&event.key!==' ')return;
+  const clause=event.target.closest?.('[role="button"][data-excerpt],[role="button"][data-review-row]');
+  if(!clause)return;
+  event.preventDefault();
+  clause.click();
 },true);
 window.ReadingViews = {readingRecords,readingReviewPeriod,readingProcessKey,readingLegend,readingReviewRows};
