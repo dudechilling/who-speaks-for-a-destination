@@ -1,3 +1,9 @@
-Cariboo Chilcotin Coast is one of the five research subjects in this prototype.
+Editorial placeholder — final copy will follow verification of relevant historical and current sources.
 
-Its dated source records and proposed language coding are available in the workbook-backed views.
+The Cariboo Chilcotin Coast profile will compare how the regional association presents its mandate, activities, responsibilities and intended beneficiaries in the earliest eligible About-page capture and in its contemporary wording. Differences in names and presentation will be documented rather than treated as incidental. The final narrative will examine how the organization describes business interests, visitor experience, regional communities and destination management, using direct source citations for every substantive claim.
+
+A second layer will examine board composition for the periods supported by available records. The dataset will distinguish an individual's director role from their employer, professional association and any stated geographic or community constituency. A role or affiliation can suggest a perspective but cannot establish personal motives, actual influence or who ultimately benefited. The public profile will therefore separate the evidence of formal governance from interpretive claims about representation.
+
+Only documented capture years will be compared. A historical page cannot establish continuous terminology or continuous board tenure between the two observations. The future final profile will make these limitations legible while providing a concise account of organizational self-description and governance change. Until then, this text remains a guide to the intended evidence rather than a research conclusion.
+
+[Visit the current Cariboo Chilcotin Coast Tourism Association industry website](https://industry.landwithoutlimits.com/)

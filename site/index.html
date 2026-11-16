@@ -4,22 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#f5f3e7">
-<meta name="description" content="Who speaks for a destination? Interactive research prototype.">
-<title>Who speaks for a destination? | Research prototype</title>
+<meta name="description" content="Who speaks for a destination? A research atlas of institutional language and governance.">
+<title>Who speaks for a destination? | Research atlas</title>
 <link rel="stylesheet" href="./styles.css">
 <link rel="stylesheet" href="./reading-layout.css">
 <link rel="stylesheet" href="./language-table.css">
+<link rel="stylesheet" href="./refinements.css">
 <script defer src="./vendor/xlsx.full.min.js"></script>
 <script defer src="./app.js"></script>
 <script defer src="./reading-layout.js"></script>
 <script defer src="./language-table.js"></script>
+<script defer src="./refinements.js"></script>
 </head>
 <body>
 <a class="skip" href="#view">Skip to content</a>
 <div class="app-shell">
   <main id="view" class="canvas" tabindex="-1" aria-live="polite"></main>
   <footer class="bottom-shell">
-    <div class="bottom-note"><span id="footer-hint">FIG. 01 <i>—</i> RESEARCH PROTOTYPE</span><span class="bottom-subnote terrain-credit">CONTOUR ILLUSTRATION: POWER & LANGUAGE · WORKBOOK-DERIVED</span></div>
     <div class="dock-wrap"><div class="dock-caption" aria-hidden="true">Explore<br>the data</div><nav class="dock" aria-label="Main navigation" id="dock">
       <a href="#profiles" data-route="profiles" aria-label="Profiles"><span class="dock-icon" data-icon="map"></span><span>Profiles</span></a>
       <a href="#language" data-route="language" aria-label="Language"><span class="dock-icon" data-icon="speech"></span><span>Language</span></a>
@@ -37,4 +38,12 @@
   <footer class="modal-foot"><span>WORKBOOK RECORDS / REVIEW STATUS SHOWN</span><a class="dark-action" href="#corpus" id="all-corpus-link">SEE THE WHOLE CORPUS ↗</a></footer>
  </section>
 </div>
+<dialog id="theme-document-modal" class="theme-document-modal" aria-labelledby="theme-dialog-title">
+ <div class="theme-dialog-inner">
+  <header class="theme-dialog-header"><div><div class="theme-dialog-eyebrow"></div><h2 id="theme-dialog-title">About-page source</h2></div><button type="button" class="theme-dialog-close" aria-label="Close About-page comparison">×</button></header>
+  <div class="theme-dialog-source"></div>
+  <div class="theme-dialog-reading" aria-label="Indexed About-page passages"></div>
+  <footer class="theme-dialog-footer"><div class="theme-dialog-legend" aria-label="Theme colour key"></div><p class="theme-dialog-note"></p></footer>
+ </div>
+</dialog>
 </body></html>

@@ -4,7 +4,7 @@
 
 **Public site:** https://dudechilling.github.io/who-speaks-for-a-destination/
 
-The site adapts the original [Power-and-Language](https://github.com/dudechilling/Power-and-Language) editorial prototype rather than replacing its interface. It retains the Home carousel, original B.C. tourism-region map, region tabs, Language panels, Governance board roster, Corpus view, source modal and navigation dock. The sixth official geographic region, Vancouver, Coast & Mountains, is outside the five-region research sample.
+The site adapts the original [Power-and-Language](https://github.com/dudechilling/Power-and-Language) editorial prototype rather than replacing its interface. It retains the Home carousel, original B.C. tourism-region map, region tabs, Language timeline and thematic comparison tables, Governance board roster, Corpus view, source modal and navigation dock. The sixth official geographic region, Vancouver, Coast & Mountains, is outside the five-region research sample.
 
 **Two independent workbook sources:**
 
@@ -18,6 +18,12 @@ Timeline years reflect available **source or capture observations**, not establi
 **Publication and rights:** The existing public language workbook contains third-party source excerpts accompanied by a residual Canadian fair-dealing and permission risk. No new unpublished captures or the private 414-row workbook are committed here. Review rights and provenance before publishing further passages.
 
 The publication workflow stages the root language and governance workbooks for GitHub Pages and uses a SHA-256-pinned SheetJS browser parser. See `site/app.js` and `site/tests/atlas.test.mjs`.
+
+### Editing the public site
+
+Home slide text is loaded from Markdown files under [`site/content/home/`](site/content/home/): `project.md`, `rdmos.md`, and `researcher.md`. The five regional profiles are loaded from [`site/content/profiles/`](site/content/profiles/). Edit the corresponding file on GitHub's `main` branch to republish its text automatically through the existing Pages workflow. Profile Markdown supports headings, paragraphs, and ordinary `[link text](https://example.org/)` links, including a link to the RDMO's current website. Existing regional profiles contain **explicit editorial placeholders**, not verified historical findings.
+
+The Language page defaults to **Tables → Beneficiaries** for the selected RDMO, with only its recorded About-page capture years. Clicking a table cell opens the associated document and highlights potential theme words as navigation aids. A coloured word does **not** establish a beneficiary or institutional priority; accepted findings require source-specific human confirmation in the workbook. The Timeline view retains the original page's recorded paragraph/list groupings and provides a separate pane for clause-level proposals. No annual observations are interpolated.
 
 ---
 
