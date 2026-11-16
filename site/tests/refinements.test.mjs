@@ -76,9 +76,10 @@ test('Agency summary never treats free-text representation notes as voice catego
   const c=fixture(),out=c.window.SiteRefinements.compactOverview();
   assert.match(out,/Processes/);
   assert.match(out,/Actors/);
-  assert.match(out,/Affected participants/);
-  assert.match(out,/Agency \/ voice/);
-  assert.match(out,/Not separately coded in this workbook/);
+  assert.match(out,/Named groups · search cues/);
+  assert.match(out,/Priorities · search cues/);
+  assert.doesNotMatch(out,/Affected participants<\/h3>/);
+  assert.doesNotMatch(out,/Agency \/ voice/);
   assert.doesNotMatch(out,/Claims community stewardship/);
 });
 test('Timeline options track selected RDMO capture years rather than a corpus-wide annual sequence',()=>{
@@ -86,4 +87,31 @@ test('Timeline options track selected RDMO capture years rather than a corpus-wi
   assert.deepEqual([...c.window.SiteRefinements.regionSourceYears()],[2002,2026]);
   c.state.region='northern';
   assert.deepEqual([...c.window.SiteRefinements.regionSourceYears()],[2000]);
+});
+test('Selected annotations suppress quotes, absent modality and un-coded voice while providing search cues',()=>{
+  const c=fixture();
+  const selected={...c.state.language.clauses[0],modality:'none',institutional_priority:'Not stated',
+    social_actor_representation:'Not stated',annotations:'Not specified'};
+  const output=c.readingAnnotations(selected);
+  assert.doesNotMatch(output,/<blockquote|>Modality<|>Agency \/ voice<|VI-H-001/);
+  assert.match(output,/Named groups · search cues/);
+  assert.match(output,/Tourism businesses/);
+  assert.match(output,/definition-trigger/);
+});
+test('The Corpus type filter is initialized so the records are not silently excluded',()=>{
+  const source=fs.readFileSync(new URL('../app.js',import.meta.url),'utf8');
+  assert.match(source,/corpusYear:'all',corpusType:'all'/);
+  assert.match(source,/state\.corpusType==='all'\|\|d\.type===state\.corpusType/);
+});
+test('Source structure keeps historical and current paragraph boundaries separate from coding',()=>{
+  const script=fs.readFileSync(new URL('../source-structure.js',import.meta.url),'utf8');
+  const context={window:{}};
+  vm.createContext(context);
+  vm.runInContext(script,context);
+  const history=context.window.SourceStructure['VI-H'];
+  assert.equal(history.blocks['VI-H-001'],history.blocks['VI-H-002']);
+  assert.notEqual(history.blocks['VI-H-003'],history.blocks['VI-H-004']);
+  assert.notEqual(history.blocks['VI-H-010'],history.blocks['VI-H-011']);
+  assert.equal(context.window.SourceStructure['VI-C'].styles['VI-C-001'],'lead');
+  assert.equal(context.window.SourceStructure['VI-C'].before['VI-C-002'][0].text,'Our Commitment to the Future');
 });

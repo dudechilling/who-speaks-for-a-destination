@@ -13,6 +13,52 @@
   let modalFocusTarget = null;
   let themeModalSelection = null;
 
+  const definitions=Object.freeze({
+    process_type:'Systemic functional linguistics process type: whether a clause depicts doing, being, sensing, saying or another kind of process. A proposal is not yet an accepted finding.',
+    process:'Process categories indicate what kind of experience the clause represents. These are machine-proposed counts.',
+    actor:'Primary grammatical actor or participant; not evidence of formal authority.',
+    affected_participant:'Participant acted upon or affected in the clause. Merely naming an organization or community is not enough.',
+    named_groups:'Text-matching cues for named groups in source passages, not verified beneficiaries or affected participants.',
+    priorities:'Text-matching cues for activities and goals, not independently established institutional priorities.',
+    agency_voice:'Active/passive grammatical voice, only when explicitly coded. Free-text representation notes do not qualify.',
+    modality:'Expressions of possibility, frequency, obligation or inclination. Fields coded none are omitted.',
+    institutional_priority:'Proposed coding of an institutional aim; self-description is not verified performance.',
+    social_actor_representation:'How people or organizations are named or positioned in the source wording.',
+    annotations:'Coding rationale or research note rather than an established finding.',
+    corpus:'A source register extracted from the current Language and Governance workbooks. Local imports do not publish.'
+  });
+  function definitionButton(key){
+    return definitions[key]?'<button class="definition-trigger" type="button" data-definition="'+esc(key)+'" aria-label="Explain '+esc(key.replaceAll('_',' '))+'" aria-expanded="false">?</button>':'';
+  }
+  if(typeof codeField==='function'){
+    const originalCodeField=codeField;
+    codeField=function codeFieldWithExplanation(field,row){
+      return originalCodeField(field,row).replace('<span aria-hidden="true">ⓘ</span>','')
+        .replace('</label>','</label>'+definitionButton(field));
+    };
+  }
+  let activeDefinition=null;
+  function closeDefinition(){
+    const tip=document.querySelector('#definition-tooltip');
+    if(tip)tip.hidden=true;
+    if(activeDefinition){activeDefinition.setAttribute('aria-expanded','false');activeDefinition.removeAttribute('aria-describedby');}
+    activeDefinition=null;
+  }
+  function toggleDefinition(button){
+    if(activeDefinition===button){closeDefinition();return;}
+    closeDefinition();
+    const tip=document.querySelector('#definition-tooltip'),message=definitions[button.dataset.definition];
+    if(!tip||!message)return;
+    tip.textContent=message;tip.hidden=false;
+    const rect=button.getBoundingClientRect(),width=Math.min(340,window.innerWidth-24);
+    tip.style.maxWidth=width+'px';
+    tip.style.left=Math.max(12,Math.min(rect.left,window.innerWidth-width-12))+'px';
+    tip.style.top=(rect.bottom+8)+'px';
+    if(rect.bottom+8+tip.offsetHeight>window.innerHeight-12)tip.style.top=Math.max(12,rect.top-tip.offsetHeight-8)+'px';
+    button.setAttribute('aria-expanded','true');button.setAttribute('aria-describedby','definition-tooltip');
+    activeDefinition=button;
+  }
+
   // Markdown is authored in site/content/ on GitHub. Render links as links,
   // never as trusted HTML. All ordinary text still uses the original escaping.
   function inlineMarkdown(value) {
@@ -105,7 +151,7 @@
     const url=safeUrl(source?.url||source?.source_url);
     const org=R.find(x=>x[0]===state.region)?.[1]||'Regional organization';
     const date=source?.date||source?.capture_date;
-    const citation='Source: '+org+' About ('+String(source?.id||'source')+')'+(date?' · '+readingDateLabel(date):'');
+    const citation='Source: '+org+' About page'+(date?' · '+readingDateLabel(date):'');
     return '<div class="reading-footnotes">'+(url?'<a class="reading-source-citation" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+esc(citation)+' ↗</a>':
       '<span class="reading-source-unavailable">'+esc(citation)+' · Link unavailable</span>')+'</div>';
   };
@@ -126,57 +172,71 @@
       '" aria-label="Choose About-page source year"></div></div>';
   };
 
+
+  const toneNames=['amber','indigo','sage','coral','blue','ochre','violet'];
+  function coded(value){
+    const v=String(value??'').trim();
+    return !!v&&!/^(?:none|not stated(?: in clause)?|not coded|not specified|not applicable|unclear|unknown|n\/a|other)$/i.test(v);
+  }
   function topCategories(rows,key,limit=4){
-    const map=new Map();
-    for(const r of rows){
-      let value=String(r[key]||'').trim();
-      if(!value || /^(not stated|not coded|not specified|not applicable|unclear|none|other)$/i.test(value))continue;
-      if(value.length>75)value=value.slice(0,72)+'…';
-      map.set(value,(map.get(value)||0)+1);
-    }
-    return [...map.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0])).slice(0,limit);
-  }
-  function miniBreakdown(title,values,emptyText='No named entries'){
-    const max=Math.max(1,...values.map(v=>v[1]));
-    const bars=values.length?values.map(([value,count])=>
-      '<div class="lm-mini-row"><div class="lm-mini-label" title="'+esc(value)+'">'+esc(value)+
-      '</div><div class="lm-mini-track"><i style="width:'+Math.max(6,Math.round(count/max*100))+'%"></i></div>'+
-      '<strong>'+count+'</strong></div>').join(''):'<p class="lm-mini-empty">'+esc(emptyText)+'</p>';
-    return '<section class="lm-mini-metric"><h3>'+esc(title)+'</h3>'+bars+'</section>';
-  }
-  function categoricalVoice(rows){
     const counts=new Map();
-    const valid=new Set(['active','passive','non_finite','unclear']);
-    rows.forEach(row=>{
-      const key=String(row.agency||'').trim().toLowerCase();
-      if(valid.has(key))counts.set(key,(counts.get(key)||0)+1);
-    });
-    return [...counts.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
+    for(const row of rows){
+      const value=String(row[key]??'').trim();
+      if(!coded(value))continue;
+      const k=value.toLowerCase(),entry=counts.get(k)||{label:value,count:0};
+      entry.count++;counts.set(k,entry);
+    }
+    return [...counts.values()].sort((a,b)=>b.count-a.count||a.label.localeCompare(b.label))
+      .slice(0,limit).map(x=>[x.label.length>70?x.label.slice(0,67)+'…':x.label,x.count]);
+  }
+  function cueCategories(rows,dimension,limit=5){
+    return (window.LanguageMatrix?.themes?.[dimension]||[]).map((theme,i)=>{
+      if(!theme.terms)return null;
+      const re=new RegExp(theme.terms.source,theme.terms.flags.replace(/g/g,''));
+      const count=rows.filter(row=>re.test(String(row.text||''))).length;
+      return count?[theme.label,count,i]:null;
+    }).filter(Boolean).sort((a,b)=>b[1]-a[1]).slice(0,limit);
+  }
+  function miniBreakdown(title,values,emptyText='No coded entries',help=''){
+    const max=Math.max(1,...values.map(v=>v[1]));
+    const bars=values.length?values.map(([value,count,tone])=>
+      '<div class="lm-mini-row"><div class="lm-mini-label" title="'+esc(value)+'">'+
+      (Number.isInteger(tone)?'<i class="lm-mini-swatch theme-tone-'+toneNames[tone]+'" aria-hidden="true"></i>':'')+esc(value)+
+      '</div><div class="lm-mini-track"><i class="'+(Number.isInteger(tone)?'theme-tone-'+toneNames[tone]:'')+'" style="width:'+Math.max(6,Math.round(count/max*100))+'%"></i></div>'+
+      '<strong>'+count+'</strong></div>').join(''):'<p class="lm-mini-empty">'+esc(emptyText)+'</p>';
+    return '<section class="lm-mini-metric"><h3>'+esc(title)+definitionButton(help)+'</h3>'+bars+'</section>';
   }
   function compactOverview(){
     const rows=readingRecords(state.region,state.year).clauses.filter(r=>!['heading','caption','footer','button'].includes(r.type));
-    return '<div class="lm-annotation-overview"><p class="lm-overview-lede">A snapshot of the current About page’s coding categories. Select a passage to examine its wording.</p>'+
+    const affected=topCategories(rows,'affected_participant',3);
+    return '<div class="lm-annotation-overview"><p class="lm-overview-lede">Proposed linguistic codes and source-text search cues. Select a passage for details.</p>'+
       '<div class="lm-mini-grid">'+
-      miniBreakdown('Processes',topCategories(rows,'process',4))+
-      miniBreakdown('Actors',topCategories(rows,'actor',3))+
-      miniBreakdown('Affected participants',topCategories(rows,'affected_participant',3))+
-      miniBreakdown('Agency / voice',categoricalVoice(rows),'Not separately coded in this workbook')+
-      '</div></div>';
+      miniBreakdown('Processes',topCategories(rows,'process',4),'No process proposals','process')+
+      miniBreakdown('Actors',topCategories(rows,'actor',3),'No named actors','actor')+
+      (affected.length?miniBreakdown('Affected participants',affected,'No separately coded participants','affected_participant'):'')+
+      miniBreakdown('Named groups · search cues',cueCategories(rows,'beneficiaries'),'No matching group terms','named_groups')+
+      miniBreakdown('Priorities · search cues',cueCategories(rows,'priorities'),'No matching priority terms','priorities')+
+      '</div><p class="lm-overview-caveat">Search cues are not confirmed beneficiaries, affected participants or research findings.</p></div>';
   }
   readingAnnotations=function readingAnnotationsWithoutSourceLink(selected){
     if(!selected)return compactOverview();
     const fields=[
-      ['SFL process',READING_PROCESS_NAMES[readingProcessKey(selected.process)]],
-      ['Actor / primary participant',selected.actor],
-      ['Affected participant',selected.affected_participant],
-      ['Agency / voice',selected.agency],
-      ['Modality',selected.modality],
-      ['Institutional priority',selected.institutional_priority],
-      ['Social actor representation',selected.social_actor_representation],
-      ['Coding annotation',selected.annotations]
-    ];
-    return '<div class="reading-annotation-content"><blockquote>'+esc(selected.text)+'</blockquote><dl>'+
-      fields.map(([name,val])=>readingAnnotationValue(name,val)).join('')+'</dl></div>';
+      ['SFL process',READING_PROCESS_NAMES[readingProcessKey(selected.process)],'process_type'],
+      ['Actor / primary participant',selected.actor,'actor'],
+      ['Affected participant',selected.affected_participant,'affected_participant'],
+      ['Agency / voice',/^(?:active|passive|non_finite)$/i.test(String(selected.agency||'').trim())?selected.agency:'','agency_voice'],
+      ['Modality',selected.modality,'modality'],
+      ['Institutional priority',selected.institutional_priority,'institutional_priority'],
+      ['Social actor representation',selected.social_actor_representation,'social_actor_representation'],
+      ['Coding annotation',selected.annotations,'annotations']
+    ].filter(item=>coded(item[1]));
+    const rowHtml=fields.map(([name,val,key])=>
+      '<div class="reading-annotation-item"><dt>'+esc(name)+definitionButton(key)+'</dt><dd>'+esc(val)+'</dd></div>').join('');
+    const cues=cueCategories([selected],'beneficiaries');
+    const cueHtml=cues.length?'<div class="reading-annotation-item"><dt>Named groups · search cues'+definitionButton('named_groups')+'</dt><dd class="lm-clause-cues">'+
+      cues.map(([name,,tone])=>'<span class="lm-cue-chip"><i class="theme-tone-'+toneNames[tone]+'" aria-hidden="true"></i>'+esc(name)+'</span>').join('')+
+      '</dd></div>':'';
+    return '<div class="reading-annotation-content"><dl>'+rowHtml+cueHtml+'</dl></div>';
   };
 
   function tableView(){
@@ -223,7 +283,7 @@
     const panel=document.querySelector('.reading-language .reading-annotations');
     if(!panel)return;
     const h=panel.querySelector('header>span');
-    if(h)h.textContent=selected?.id||'Overview';
+    if(h)h.textContent=selected?'Selected passage':'Overview';
     const scroller=panel.querySelector('.reading-scroll');
     if(scroller){scroller.innerHTML=readingAnnotations(selected);scroller.scrollTop=0;}
     document.querySelectorAll('.reading-language [data-excerpt]').forEach(node=>
@@ -232,7 +292,6 @@
 
   // The full About page is reconstructed using paragraph/list locators already
   // present in the workbook. Phrase highlights are search cues, never decisions.
-  const toneNames=['amber','indigo','sage','coral','blue','ochre','violet'];
   function markedText(value,dimension){
     const source=String(value||''),themes=window.LanguageMatrix.themes[dimension];
     const matches=[];
@@ -293,10 +352,10 @@
       body.innerHTML='<p>No source text is available. No theme conclusion can be made.</p>';
     }else{
       const link=safeUrl(doc.url);
-      src.innerHTML='<strong>'+esc(doc.id)+'</strong> · '+esc(readingDateLabel(doc.date))+
+      src.innerHTML='<strong>About-page excerpt</strong> · '+esc(readingDateLabel(doc.date))+
         (link?' · <a href="'+esc(link)+'" target="_blank" rel="noopener noreferrer">Original capture ↗</a>':' · Source link unavailable')+
         (docs.length>1?' · <label>Capture <select data-theme-source>'+docs.map(d=>
-          '<option value="'+esc(d.id)+'" '+(d.id===doc.id?'selected':'')+'>'+esc(d.id)+'</option>').join('')+'</select></label>':'');
+          '<option value="'+esc(d.id)+'" '+(d.id===doc.id?'selected':'')+'>Source '+(docs.indexOf(d)+1)+'</option>').join('')+'</select></label>':'');
       body.innerHTML=highlightedPage(doc,dimension);
       body.scrollTop=0;
     }
@@ -324,6 +383,9 @@
   }
 
   document.addEventListener('click',event=>{
+    const definition=event.target.closest('[data-definition]');
+    if(definition){event.preventDefault();event.stopPropagation();toggleDefinition(definition);return;}
+    if(activeDefinition&&!event.target.closest('#definition-tooltip'))closeDefinition();
     const button=event.target.closest('[data-theme-cell]');
     if(button&&state.route==='language'){
       event.preventDefault();event.stopPropagation();
@@ -356,6 +418,7 @@
     }
   },true);
   document.addEventListener('keydown',event=>{
+    if(event.key==='Escape')closeDefinition();
     if(event.key==='Enter'||event.key===' '){
       const element=event.target.closest('.reading-language .reading-source-heading [data-excerpt]');
       if(element){event.preventDefault();syncSelectedClause(element.dataset.excerpt);}

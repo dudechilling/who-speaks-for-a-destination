@@ -71,6 +71,8 @@ function readingTabs() {
 }
 
 function readingSourceBlockKey(item) {
+  const curated=window.SourceStructure?.[item.source]?.blocks?.[item.id];
+  if(curated)return 'documented:'+item.source+':'+curated;
   const explicit = item.block_id || item.paragraph_id;
   if (explicit) return 'block:' + explicit;
   const loc = String(item.section || '');
@@ -122,8 +124,20 @@ function readingHighlightRows(rows, selectedId, reviewMode) {
     const type=String(item.type||item.text_type||'clause').toLowerCase();
     if(src!==previousSource) {
       close();
-      html+='<div class="reading-document-name">'+esc(src||'Unidentified source')+'</div>';
+      if(reviewMode)html+='<div class="reading-document-name">'+esc(src||'Unidentified source')+'</div>';
       previousSource=src;
+    }
+    // Source-checked display headings do not add or change coded clauses.
+    const display=reviewMode?null:window.SourceStructure?.[src];
+    for(const heading of display?.before?.[item.id]||[]) {
+      close();
+      const level=heading.level===2?'h2':'h3';
+      html+='<'+level+' class="reading-source-heading reading-source-heading--documented">'+esc(heading.text)+'</'+level+'>';
+    }
+    if(display?.styles?.[item.id]==='lead') {
+      close();
+      html+='<h4 class="reading-source-lead">'+control(item,content)+'</h4>';
+      continue;
     }
     if(type==='heading') {
       close();
@@ -154,7 +168,8 @@ function readingHighlightRows(rows, selectedId, reviewMode) {
     }
     const block=readingSourceBlockKey(item);
     if(tag!=='p'||key!==block||block===null)enter('p',block);
-    html+=control(item,content)+' ';
+    const connector=reviewMode?' ':display?.separators?.[item.id];
+    html+=control(item,content)+(typeof connector==='string'&&connector.length<=8?esc(connector):' ');
   }
   close();
   return html+'</div>';
@@ -219,7 +234,7 @@ function readingFooter(rows, source, reviewMode) {
 function readingSourcePicker(options,selected) {
   if(options.length<=1) return '';
   return '<label class="reading-source-picker">About-page capture <select data-reading-source aria-label="Select About-page capture">'+
-    options.map(x=>'<option value="'+esc(x.id)+'" '+(x.id===selected?.id?'selected':'')+'>'+esc(x.id)+' · '+esc(readingDateLabel(x.date||x.capture_date))+'</option>').join('')+
+    options.map(x=>'<option value="'+esc(x.id)+'" '+(x.id===selected?.id?'selected':'')+'>'+'Capture '+(options.indexOf(x)+1)+' · '+esc(readingDateLabel(x.date||x.capture_date))+'</option>').join('')+
     '</select></label>';
 }
 function readingScaffold(reviewMode, left, right, rows, source, title, selectionLabel, sourcePicker='') {
@@ -240,7 +255,7 @@ function language() {
   const source = result.sources.find(row => row.id === selected?.source) || result.sources[0];
   const name = R.find(pair => pair[0] === state.region)?.[1] || 'Regional organization';
   const left = readingHighlightRows(result.clauses,selected?.id,false);
-  const right = '<header><h2>Annotations</h2><span>' + (selected ? esc(selected.id) : 'Select a clause') + '</span></header>' +
+  const right = '<header><h2>Annotations</h2><span>' + (selected ? 'Selected passage' : 'Overview') + '</span></header>' +
     '<div class="reading-scroll" aria-live="polite">' + readingAnnotations(selected,source) + '</div>';
   return readingScaffold(false,left,right,result.clauses,source,'About us',name + ' · ' + (state.year||'No date'),readingSourcePicker(result.availableSources,source));
 }
