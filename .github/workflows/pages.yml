@@ -46,9 +46,24 @@ jobs:
           assert [c.value for c in next(book['Sources'].rows)][:len(sources)] == sources
           book.close()
           PY
-          node --check site/app.js
+          python - <<'PYCODE'
+          from openpyxl import load_workbook
+          book=load_workbook('RDMO_about_coding_review.xlsx',read_only=True,data_only=True)
+          assert len(book.sheetnames)==11
+          total=0
+          required={'source_order','paragraph_id','block_kind','heading_before','boundary_basis','human_review_status','human_actor'}
+          for sheet in list(book)[1:]:
+              columns={cell.value for cell in next(sheet.rows)}
+              assert required.issubset(columns),sheet.title
+              total+=sheet.max_row-1
+          assert total==194,total
+          book.close()
+          PYCODE
+          cmp RDMO_about_coding_review.xlsx site/data/language.xlsx
+          for file in site/app.js site/reading-layout.js site/language-table.js site/refinements.js site/canonical-workflow.js; do node --check "$file"; done
           node --test site/tests/*.mjs
-          if grep -R -qi 'lorem ipsum' site/content; then echo 'Placeholder text found'; exit 1; fi
+          if grep -R -qi --exclude='ai-disclosure.md' 'lorem ipsum' site/content; then echo 'Unexpected placeholder found'; exit 1; fi
+          grep -qi 'Editorial placeholder' site/content/ai-disclosure.md
       - uses: actions/configure-pages@v5
         with:
           enablement: true

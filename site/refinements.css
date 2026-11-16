@@ -176,3 +176,97 @@
 .reading-annotations .reading-annotation-item dt{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .reading-annotations .reading-annotation-item .definition-trigger{flex:none}
 @media(max-width:620px){.lm-mini-grid{grid-template-columns:1fr 1fr}.lm-mini-label{font-size:10px}.definition-tooltip{font-size:12px}.lm-cue-chip{padding:3px 5px;font-size:10px}}
+
+/* Canonical workbook UI: consistent editorial hierarchy on every route. */
+#view :is(.page-head,.home-head,.reading-heading,.governance-reading-heading){
+  box-sizing:border-box;min-height:clamp(160px,19vh,196px)!important;
+  padding:6px 0 12px!important;align-items:flex-end;flex:0 0 auto;
+}
+#view :is(.page-head,.home-head,.reading-heading,.governance-reading-heading) .page-title{
+  font-family:var(--serif)!important;font-size:clamp(46px,5.15vw,79px)!important;
+  font-weight:700!important;line-height:.93!important;letter-spacing:-.045em!important;
+  margin:0 0 8px!important;color:#456638!important;
+}
+#view :is(.page-head,.home-head,.reading-heading,.governance-reading-heading) .page-subtitle{
+  color:#4b5c47!important;font:400 clamp(14px,1.35vw,20px)/1.25 var(--sans)!important;
+  margin:0!important;max-width:75ch;
+}
+#view .corner-meta{
+  text-transform:none!important;font:650 clamp(11px,.9vw,14px)/1.3 var(--sans)!important;
+  letter-spacing:0!important;right:clamp(14px,5.9vw,110px)!important;
+  top:clamp(14px,3vh,34px)!important;text-align:right;max-width:68%;
+}
+.profile-index{display:none!important}
+.profile-homepage{display:inline-flex;margin:-8px 0 18px;font:700 clamp(12px,.94vw,16px)/1.3 var(--sans);
+  color:#2e6a60;text-decoration:underline;text-underline-offset:3px;}
+.profile-homepage:hover{color:#be7159}
+#view:has(.profile-body) .profile-name{margin-bottom:11px}
+#view:has(.profile-body) .profile-copy .prose p:last-child:empty{display:none}
+.lm-annotation-overview .lm-overview-lede:empty,
+.lm-annotation-overview .lm-overview-caveat:empty{display:none}
+.lm-clean-table .lm-cell{min-height:31px!important;padding:5px 8px!important;
+  line-height:1.15!important;font-size:clamp(11px,.85vw,13px)!important}
+.lm-clean-table .lm-table tbody td,.lm-clean-table .lm-table tbody th{
+  padding:3px 7px!important;height:37px!important}
+.lm-clean-table .lm-table thead th{padding:8px!important}
+.governance-date-strip{margin:7px 0 17px}
+.governance-date-strip .lm-observation-line{height:57px}
+.governance-date-strip .empty-date-label{display:block;padding:3px 0;color:#617b67;
+  font:500 12px var(--sans)}
+#view:has(.governance-reading-heading) .reading-region-tabs{margin:5px 0 8px}
+#view:has(.governance-reading-heading) .governance-layout{min-height:0;flex:1}
+.reading-review .reading-document-name,.reading-review .reading-legend,
+.reading-review .reading-review-toolbar span{display:none!important}
+.reading-review .adjudicator-code>.micro{display:none}
+.reading-review .reading-review-toolbar{justify-content:flex-end;min-height:31px;padding:5px 0}
+.reading-review .reading-review-head{align-items:center;gap:8px}
+.reading-review .reading-review-actions{margin-left:auto;flex-wrap:wrap;display:flex;gap:5px}
+.reading-review .reading-review-actions button{font:650 clamp(11px,.83vw,14px) var(--sans);padding:5px 10px}
+.reading-review .reading-review-source{margin:16px 0 6px;font:600 12px var(--sans)}
+.reading-review .reading-review-source a{color:#386f61;text-decoration:underline}
+.reading-review .reading-review-form{padding:0}
+.reading-review .reading-review-meta{border-bottom:1px solid #b8cab5;margin-bottom:7px;padding-bottom:5px}
+.reading-review .reading-review-meta span{color:#466b52}
+.reading-review .reading-source-edit{margin:13px 0}
+.reading-review .reading-source-edit summary{cursor:pointer;font:600 12px var(--sans)}
+.corpus-toolbar--compact{display:grid!important;grid-template-columns:minmax(190px,2fr)
+ minmax(150px,1fr) minmax(110px,.75fr) minmax(150px,.9fr)!important;
+ gap:12px;align-items:end}
+.corpus-toolbar--compact .corpus-download{height:36px;align-self:end;
+ white-space:nowrap;padding:6px 14px}
+.corpus-toolbar--compact .field{min-width:0}
+.corpus-toolbar--compact input,.corpus-toolbar--compact select{width:100%}
+.ai-disclosure-link{position:absolute;left:clamp(12px,5.9vw,110px);bottom:24px;
+ display:inline-flex;gap:9px;align-items:center;color:#436f64;text-decoration:none;
+ font:700 clamp(11px,.85vw,14px) var(--sans);white-space:nowrap;z-index:5}
+.ai-disclosure-link:hover,.ai-disclosure-link:focus-visible{text-decoration:underline;
+ text-underline-offset:4px;color:#b97060}
+.ai-disclosure-icon{display:inline-flex;width:25px;height:25px;align-items:center;justify-content:center;
+ border:2px solid currentColor;border-radius:50%;font:bold 16px var(--serif)}
+.ai-disclosure-content{flex:1;min-height:0;overflow-y:auto;
+ border:1px solid #b6c9bd;border-radius:10px;background:rgba(238,245,234,.69);
+ padding:clamp(16px,2.5vw,35px);max-width:1000px}
+.ai-disclosure-content h1,.ai-disclosure-content h2{color:#426b5f}
+.ai-disclosure-content p{max-width:82ch;line-height:1.52}
+@media(max-width:920px){
+ .corpus-toolbar--compact{grid-template-columns:1.5fr 1fr!important}
+ .corpus-toolbar--compact .corpus-download{width:100%}
+ .ai-disclosure-link{bottom:90px}
+}
+@media(max-width:620px){
+ #view :is(.page-head,.home-head,.reading-heading,.governance-reading-heading){
+   min-height:115px!important;align-items:flex-start!important;padding:6px 0!important}
+ #view :is(.page-head,.home-head,.reading-heading,.governance-reading-heading) .page-title{
+   font-size:clamp(32px,7vw,43px)!important;line-height:.95!important}
+ #view :is(.page-head,.home-head,.reading-heading,.governance-reading-heading) .page-subtitle{
+   font-size:11px!important}
+ #view .corner-meta{left:10px!important;right:10px!important;max-width:none!important;
+   text-align:left!important;top:5px!important;font-size:10px!important}
+ .ai-disclosure-link{left:12px;bottom:82px;font-size:10px}
+ .ai-disclosure-icon{width:19px;height:19px;font-size:12px}
+ .corpus-toolbar--compact{grid-template-columns:1fr 1fr!important;gap:6px}
+ .corpus-toolbar--compact .corpus-download{height:29px;font-size:10px}
+ .lm-clean-table .lm-cell{min-height:28px!important;font-size:10px!important}
+ .governance-date-strip{margin:0 0 8px}
+}
+

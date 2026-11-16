@@ -58,23 +58,14 @@ test('review page filters by organization and observed period', () => {
   c.state.year=2026;
   assert.equal(c.window.ReadingViews.readingReviewRows()[0].row_id,'VI-C-001');
 });
-test('adjudicator and language expose corresponding two-panel reading views', () => {
-  const c=setup({
-    currentRows:()=>[{row_id:'VI-H-001',about_id:'VI-H',verbatim_text:'Evidence',draft:{process_type:'material'},original:{process_type:'relational'}}],
-    rowStatus:()=> 'Pending',
-    CODE:['process_type'],
-    codeField:()=>'<label>Process</label>',
-    timeline:()=>'<div class="timeline">Source years</div>',
-    chooseYear:()=>{},
-    render:()=>{},
-  });
+test('reading module delegates reviewer rendering to the browser-only canonical workflow', () => {
+  const c=setup({chooseYear:()=>{},timeline:()=>'<div>timeline</div>'});
   c.state.language.clauses=[{id:'VI-H-001',region:'island',year:2002,source:'VI-H',text:'Evidence',process:'material'}];
   assert.match(c.language(),/reading-language/);
-  assert.match(c.adjudicator(),/reading-review/);
-  assert.match(c.adjudicator(),/data-approve/);
-  assert.match(c.adjudicator(),/data-reject/);
-  assert.match(c.adjudicator(),/data-export-json/);
-  assert.match(c.adjudicator(),/data-review-row="VI-H-001"/);
+  const workflow=fs.readFileSync(new URL('../canonical-workflow.js',import.meta.url),'utf8');
+  assert.match(workflow,/adjudicator=function simplifiedAdjudicator/);
+  assert.match(workflow,/data-export-xlsx/);
+  assert.doesNotMatch(workflow,/data-connect|tail41f62a/);
 });
 
 test('legacy DOM paragraph locators preserve paragraph boundaries and clause selection', () => {
@@ -149,7 +140,7 @@ test('a future second capture in one year cannot mix two About pages on screen',
 });
 
 
-test('authenticated review year follows its own capture date, not the old public source year', () => {
+test('review year follows its own capture date, not another source year', () => {
   const ownerRows=[{row_id:'KR-H-001',about_id:'KR-H',capture_date:'1998-12-05',verbatim_text:'Historic wording'},
                    {row_id:'KR-C-001',about_id:'KR-C',capture_date:'2026-11-09',verbatim_text:'Current wording'}];
   const c=setup({

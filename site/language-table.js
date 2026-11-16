@@ -20,7 +20,7 @@
       {id:'other',label:'Other explicitly stated priorities',terms:null}
     ]
   });
-  const ui = {view:'table',dimension:'beneficiaries',scope:'regional',region:null,workbook:null,theme:null,year:null,source:null};
+  const ui = {view:'timeline',dimension:'beneficiaries',scope:'regional',region:null,workbook:null,theme:null,year:null,source:null};
 
   // Optional, deliberately separate human adjudication sheet. It does not exist in the
   // published public workbook and cannot be inferred from linguistic process labels.

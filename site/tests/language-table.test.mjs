@@ -30,15 +30,17 @@ function fixture(){
   vm.runInContext(source,context,{filename:'language-table.js'});
   return context;
 }
-test('public Language page defaults to Tables / Beneficiaries, source years only',()=>{
+test('public Language defaults to Timeline; Tables retain region-specific capture years',()=>{
   const c=fixture();
   const out=c.language();
-  assert.match(out,/data-language-view="table" aria-pressed="true"/);
-  assert.match(out,/data-language-dimension="beneficiaries" aria-pressed="true"/);
-  assert.match(out,/<th scope="col">2002<\/th>/);
-  assert.match(out,/<th scope="col">2026<\/th>/);
-  assert.doesNotMatch(out,/<th scope="col">2015<\/th>/);
-  assert.doesNotMatch(out,/<th scope="col">1999<\/th>/);
+  assert.match(out,/data-language-view="timeline" aria-pressed="true"/);
+  c.window.LanguageMatrix.ui.view='table';
+  const table=c.language();
+  assert.match(table,/data-language-dimension="beneficiaries" aria-pressed="true"/);
+  assert.match(table,/<th scope="col">2002<\/th>/);
+  assert.match(table,/<th scope="col">2026<\/th>/);
+  assert.doesNotMatch(table,/<th scope="col">2015<\/th>/);
+  assert.doesNotMatch(table,/<th scope="col">1999<\/th>/);
   c.window.LanguageMatrix.ui.scope='all';
   assert.match(c.language(),/<th scope="col">1999<\/th>/);
 });
@@ -82,6 +84,7 @@ test('future years and captures recompute from an imported workbook',()=>{
   const c=fixture();
   c.state.language.years.push(2034);
   c.state.language.docs.push({id:'VI-2034',region:'island',year:2034,date:'2034-01-01'});
+  c.window.LanguageMatrix.ui.view='table';
   assert.match(c.language(),/<th scope="col">2034<\/th>/);
 });
 test('two source captures in one year remain unresolved, rather than silently combined',()=>{

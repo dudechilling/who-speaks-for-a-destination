@@ -32,6 +32,12 @@ All workbook rows are machine-proposed and marked `pending_human_review`. No cla
 
 The material records institutional self-description, not independently verified organizational facts. The historical comparison is limited by changing websites, archive availability, names, and unknown legal continuity. Current pages can also change after retrieval.
 
+## Canonical workbook structure and human review
+
+The single published language workbook is RDMO_about_coding_review.xlsx. Original clause text, normalized text, source locations, coding proposals and original review state remain unchanged. The added source_order, paragraph_id, block_kind, heading_before and join_after columns control the display of selected source passages. The boundary_basis field records how each grouping was established. The Vancouver Island display boundaries were checked against the supplied historical and current source screenshots. Other sources use explicit DOM paragraph locators where available, or are marked as unverified boundaries. Paragraph reconstruction does not establish complete webpage coverage.
+
+Human decisions are separate: human_review_status, human_process_type, human_actor, human_affected_participant, human_agency_voice, human_modality, human_institutional_priority, human_social_actor_representation, human_review_note, human_reviewed_at_utc and human_corrected_clause. Empty human fields are not accepted decisions. The public browser reviewer saves edits locally and exports the full workbook as XLSX. Browser approval does not authenticate reviewer identity or verify source content; the researcher must inspect the exported file in Excel and replace the root GitHub workbook to publish results. Git history records publication.
+
 ## Publication and fair-dealing assessment
 
 The public [coded corpus](RDMO_about_coding_review.xlsx) reproduces **3,130 words of original wording** in 194 clause rows across ten public-facing organizational pages (95–656 words per page in the selected analytical text). The corresponding normalized clauses repeat the linguistic content in a comparable form. The workbook contains no full HTML pages, site images, navigational material or advertising. Source identifiers, retrieval dates and original URLs appear in its Index and [corpus/sources.csv](corpus/sources.csv).

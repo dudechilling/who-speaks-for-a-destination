@@ -98,20 +98,36 @@ test('Selected annotations suppress quotes, absent modality and un-coded voice w
   assert.match(output,/Tourism businesses/);
   assert.match(output,/definition-trigger/);
 });
-test('The Corpus type filter is initialized so the records are not silently excluded',()=>{
-  const source=fs.readFileSync(new URL('../app.js',import.meta.url),'utf8');
-  assert.match(source,/corpusYear:'all',corpusType:'all'/);
-  assert.match(source,/state\.corpusType==='all'\|\|d\.type===state\.corpusType/);
+test('Corpus omits the Type filter and export and the controls share one grid',()=>{
+ const workflow=fs.readFileSync(new URL('../canonical-workflow.js',import.meta.url),'utf8');
+ const css=fs.readFileSync(new URL('../refinements.css',import.meta.url),'utf8');
+ assert.match(workflow,/corpus-toolbar--compact/);
+ assert.match(workflow,/year,region,title,source_url,date_basis/);
+ assert.doesNotMatch(workflow,/corpus-type|<th>TYPE<\/th>/);
+ assert.match(css,/grid-template-columns:minmax\(190px,2fr\)/);
 });
-test('Source structure keeps historical and current paragraph boundaries separate from coding',()=>{
-  const script=fs.readFileSync(new URL('../source-structure.js',import.meta.url),'utf8');
-  const context={window:{}};
-  vm.createContext(context);
-  vm.runInContext(script,context);
-  const history=context.window.SourceStructure['VI-H'];
-  assert.equal(history.blocks['VI-H-001'],history.blocks['VI-H-002']);
-  assert.notEqual(history.blocks['VI-H-003'],history.blocks['VI-H-004']);
-  assert.notEqual(history.blocks['VI-H-010'],history.blocks['VI-H-011']);
-  assert.equal(context.window.SourceStructure['VI-C'].styles['VI-C-001'],'lead');
-  assert.equal(context.window.SourceStructure['VI-C'].before['VI-C-002'][0].text,'Our Commitment to the Future');
+test('Paragraph boundaries and display headings are in the canonical workbook',()=>{
+ const source=fs.readFileSync(new URL('../data/language.xlsx',import.meta.url));
+ const ctx={window:{},Uint8Array,ArrayBuffer,TextDecoder,TextEncoder,Buffer};
+ vm.createContext(ctx);
+ vm.runInContext(fs.readFileSync(new URL('../vendor/xlsx.full.min.js',import.meta.url),'utf8'),ctx);
+ const wb=ctx.XLSX.read(source,{type:'buffer'});
+ const sheet=ctx.XLSX.utils.sheet_to_json(wb.Sheets.VI_2002,{defval:''});
+ assert.equal(sheet.length,13);
+ assert.equal(sheet[0].paragraph_id,sheet[1].paragraph_id);
+ assert.equal(sheet[8].paragraph_id,sheet[11].paragraph_id);
+ assert.notEqual(sheet[11].paragraph_id,sheet[12].paragraph_id);
+ assert.equal(sheet[0].heading_before,'## ABOUT US');
+ assert.equal(sheet[1].join_after,' – ');
+ const current=ctx.XLSX.utils.sheet_to_json(wb.Sheets.VI_Current,{defval:''});
+ assert.match(current[1].heading_before,/Our Commitment to the Future/);
+ assert.equal(current[0].block_kind,'lead');
+ assert.equal(sheet[0].human_review_status,'');
+});
+test('Global AI disclosure links to an explicitly labelled placeholder page',()=>{
+ const page=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');
+ const disclosure=fs.readFileSync(new URL('../content/ai-disclosure.md',import.meta.url),'utf8');
+ assert.match(page,/See how we used AI\./);
+ assert.match(page,/href="#ai-disclosure"/);
+ assert.match(disclosure,/Editorial placeholder/);
 });

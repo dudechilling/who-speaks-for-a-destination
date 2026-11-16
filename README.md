@@ -1,51 +1,41 @@
 # Who speaks for a destination?
 
-## Prototype-led, workbook-backed research atlas — 2026-11-13
+A workbook-backed research atlas for CMNS 3500 at Thompson Rivers University.
 
-**Public site:** https://dudechilling.github.io/who-speaks-for-a-destination/
+**Public website:** https://dudechilling.github.io/who-speaks-for-a-destination/
 
-The site adapts the original [Power-and-Language](https://github.com/dudechilling/Power-and-Language) editorial prototype rather than replacing its interface. It retains the Home carousel, original B.C. tourism-region map, region tabs, Language timeline and thematic comparison tables, Governance board roster, Corpus view, source modal and navigation dock. The sixth official geographic region, Vancouver, Coast & Mountains, is outside the five-region research sample.
+## The published evidence
 
-**Two independent workbook sources:**
+**Language — one canonical workbook:** [RDMO_about_coding_review.xlsx](RDMO_about_coding_review.xlsx) contains ten dated About-page sources and 194 machine-proposed clauses, with one source worksheet per capture and an Index. The original clause wording, normalized wording, original AI coding, source locations and review state are preserved. New columns hold source order, paragraph IDs, headings, source-block kind and grouping evidence. The website no longer keeps a second, separate source-structure file.
 
-- **Language:** The current public default is [RDMO_about_coding_review.xlsx](RDMO_about_coding_review.xlsx), with 10 source pages and 194 AI-proposed clauses, all pending human confirmation. The Language page reads the current GitHub copy automatically; the **Import Language XLSX** control locally replaces the workbook in the browser and derives the year timeline, excerpts and categorical counts from its source records. The larger local 414-element workbook is not published by this site.
-- **Governance:** [governance.xlsx](governance.xlsx) is a separate, deliberately empty evidence template, with `Board`, `Sources` and `README` sheets. The Governance page reads the GitHub copy or a locally imported workbook. It displays only independently verified board entries as composition findings; unverified and missing records are never fabricated.
+Human review is recorded separately in human_* fields. Empty review fields are not accepted findings. Only some headings and paragraph boundaries have been checked against original captures; the boundary_basis column distinguishes screenshot-checked, DOM-locator and unverified groups. The website shows selected indexed passages, not necessarily entire historical webpages.
 
-Timeline years reflect available **source or capture observations**, not established publication dates, uninterrupted organizational continuity or inferred board tenure. New dated evidence adds years automatically without editing website code. Missing coverage remains visible as a gap.
+**Governance — distinct evidence template:** [governance.xlsx](governance.xlsx) contains README, Board and Sources worksheets. It is not a duplicate language-coding workbook. The Governance timeline remains disabled where no dated evidence exists.
 
-**Adjudicator:** Public visitor edits and approvals remain personal local work, separate from the GitHub reference. Authenticated researcher decisions require the privately hosted Alfred review API and its separate service upgrade. Neither XLSX import nor row approval automatically publishes research material or changes the canonical workbook.
+The [source register](corpus/sources.csv) and [methodology](methodology.md) document source selection, attribution, scope and uncertainty. Timeline dates are source observations, not automatically the original publication dates.
 
-**Publication and rights:** The existing public language workbook contains third-party source excerpts accompanied by a residual Canadian fair-dealing and permission risk. No new unpublished captures or the private 414-row workbook are committed here. Review rights and provenance before publishing further passages.
+## Adjudication: browser → Excel → GitHub
 
-The publication workflow stages the root language and governance workbooks for GitHub Pages and uses a SHA-256-pinned SheetJS browser parser. See `site/app.js` and `site/tests/atlas.test.mjs`.
+1. Open Adjudicator and inspect source passages. Proposed AI fields remain separate from human-review decisions.
+2. Approve or reject coding locally, then select Export XLSX. The browser generates RDMO_about_coding_review.xlsx with the original proposals and source text intact plus human-review entries. No private review server is contacted.
+3. Open the exported workbook in Excel. Inspect every correction and review status against the original source. Browser approval alone is not authenticated source verification.
+4. Replace the canonical workbook on GitHub main after manual inspection. GitHub Pages republishes the reviewed file, with changes preserved in Git history.
 
-### Editing the public site
+Browser storage remains local and can be cleared. Export before switching browsers or clearing local data. Local workbook imports change only the visitor's current browser session. The published version changes only through a GitHub commit.
 
-Home slide text is loaded from Markdown files under [`site/content/home/`](site/content/home/): `project.md`, `rdmos.md`, and `researcher.md`. The five regional profiles are loaded from [`site/content/profiles/`](site/content/profiles/). Edit the corresponding file on GitHub's `main` branch to republish its text automatically through the existing Pages workflow. Profile Markdown supports headings, paragraphs, and ordinary `[link text](https://example.org/)` links, including a link to the RDMO's current website. Existing regional profiles contain **explicit editorial placeholders**, not verified historical findings.
+The public mini-site no longer has a private researcher connection or approval API. Prior reviewer-server code remains recoverable from Git history.
 
-The Language page defaults to **Tables → Beneficiaries** for the selected RDMO, with only its recorded About-page capture years. Clicking a table cell opens the associated document and highlights potential theme words as navigation aids. A coloured word does **not** establish a beneficiary or institutional priority; accepted findings require source-specific human confirmation in the workbook. The Timeline view retains the original page's recorded paragraph/list groupings and provides a separate pane for clause-level proposals. No annual observations are interpolated.
+## Editing the public site
 
----
+The Home blurbs are Markdown under [site/content/home/](site/content/home/). Profiles and current RDMO website links are edited under [site/content/profiles/](site/content/profiles/). Edit these on main to republish. Profile blurbs remain explicitly labelled editorial placeholders.
 
-### Historical research snapshot (2026-11-09)
+The five independent regional organizations appear on Language, Governance and Adjudicator. Vancouver, Coast & Mountains remains hatched on the official geography for context. Language opens in Timeline by default; Tables show source-specific thematic search cues, not human-confirmed findings.
 
+The [AI disclosure](site/content/ai-disclosure.md) is explicitly labelled placeholder material. It must be replaced with an accurate account before final publication.
 
-**Research status — 2026-11-09:** Revised institutional-language methodology, ten-source register and the [public coded corpus](RDMO_about_coding_review.xlsx) are available. All 194 proposed clause classifications remain **pending human review**.
+## Historical scope and source rights
 
-This CMNS 3500 project asks how five British Columbia regional destination marketing organizations explain what they are, what they do, whom they represent or benefit, and the responsibilities or institutional authority they claim.
+The project compares historical and contemporary institutional self-description across five regional organizations. The earlier broader research plan is preserved on the [archived](https://github.com/dudechilling/who-speaks-for-a-destination/tree/archived) branch.
 
-It compares one historical and one contemporary About page for Northern BC, Cariboo Chilcotin Coast, Thompson Okanagan, Kootenay Rockies, and Vancouver Island. The ten fixed pages and their capture details are in [corpus/sources.csv](corpus/sources.csv). Readers can use the recorded URLs to locate the original webpages.
+The public language workbook reproduces third-party excerpts for educational research. The case-specific Canadian fair-dealing rationale and residual legal risks are detailed in [methodology.md](methodology.md#publication-and-fair-dealing-assessment). It is not permission from source publishers or a guarantee against reuse restrictions. Private full-page captures and the larger unpublished local workbook remain outside this deployment.
 
-The earlier repository proposed three datasets covering public language, governance, and performance. On 2026-11-09, that broad proposal was deliberately replaced by this bounded institutional-language study. The earlier snapshot is preserved on the [`archived`](https://github.com/dudechilling/who-speaks-for-a-destination/tree/archived) branch. This change is not presented as part of the original October plan.
-
-Each eligible institutional explanation was read before clause segmentation. A row normally represents a grammatical clause. Short clause complexes remain together where separating them would damage attribution, negation, modality, a condition, or the main institutional claim. The workbook keeps the exact source wording and a deterministic normalized version: Unicode NFKC, lowercase, punctuation and symbols changed to spaces, whitespace collapsed, then trimmed. [scripts/normalize_clauses.py](scripts/normalize_clauses.py) implements that rule.
-
-The workbook proposes only two SFL metafunctions: ideational process type and primary grammatical participant, plus interpersonal modality. A short representation note records what the page says about representation, service, inclusion, or benefit. It does not establish actual board composition, membership rights, voting rights, governance arrangements, or decision-making authority.
-
-The [**RDMO_about_coding_review.xlsx**](RDMO_about_coding_review.xlsx) workbook is the public, machine-coded corpus: 194 clause rows across ten document worksheets and an Index. Its `original_clause` values reproduce selected website text; `normalized_clause` gives the deterministic transformation. All codes are proposals, not reviewed research findings. The published file is a byte-identical copy of the original Codex workbook, not a revised/adjudicated dataset. The `review` filename identifies its intended use, **not** an already-completed review.
-
-**Source-text rights:** The corpus is published for non-commercial academic research and auditability under a documented, case-specific Canadian fair-dealing rationale ([methodology](methodology.md#publication-and-fair-dealing-assessment)). This is an assessment, not a licence from the original publishers or a guarantee against a copyright challenge. Worldwide availability weighs against fairness; original site terms and other rights may also apply. The quoted language belongs to its original publishers. No permission to reuse their text is granted by this repository. Every source is attributed and linked in [corpus/sources.csv](corpus/sources.csv) and the workbook Index. Full HTML captures remain private.
-
-The historical/contemporary pairings are linguistic comparisons, not proof of legal continuity. The historical Cariboo page names the Cariboo Tourism Association; the current page distinguishes development/sustainability and marketing associations. The Vancouver Island current page uses 4TVI within the 4VI Group. Those distinctions remain explicit rather than resolved by assumption.
-
-Governance research is a future, separate phase. This repository stops with the institutional-language workbook ready for human review.

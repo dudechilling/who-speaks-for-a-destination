@@ -12,8 +12,6 @@ const READING_PROCESS_NAMES = Object.freeze({
   other:'Other / unspecified'
 });
 const READING_PROCESS_ORDER = ['material','relational','verbal','mental','existential','behavioural','unclear','not_applicable','other'];
-let readingSourceVerified = false;
-let readingRecoded = false;
 let readingSourceId = null;
 
 function readingProcessKey(value) {
@@ -108,7 +106,7 @@ function readingHighlightRows(rows, selectedId, reviewMode) {
     const visible=String(content).trim();
     const full=String(reviewMode?(item.verbatim_text||item.text||''):item.text||'').trim();
     return '<button type="button" class="reading-highlight reading-highlight--'+category+'" '+
-      field+'="'+esc(id)+'" aria-pressed="'+(id===selectedId)+'" aria-label="'+esc(id+': '+full)+'" title="'+esc(READING_PROCESS_NAMES[category])+'">'+esc(visible)+'</button>';
+      field+'="'+esc(id)+'" aria-pressed="'+(id===selectedId)+'" aria-label="'+esc(full)+'" title="'+esc(READING_PROCESS_NAMES[category])+'">'+esc(visible)+'</button>';
   }
   function addList(item,content,number=null,bullet=false) {
     const kind=bullet?'ul':'ol';
@@ -124,12 +122,12 @@ function readingHighlightRows(rows, selectedId, reviewMode) {
     const type=String(item.type||item.text_type||'clause').toLowerCase();
     if(src!==previousSource) {
       close();
-      if(reviewMode)html+='<div class="reading-document-name">'+esc(src||'Unidentified source')+'</div>';
+      // Internal document IDs are not displayed.
       previousSource=src;
     }
     // Source-checked display headings do not add or change coded clauses.
-    const display=reviewMode?null:window.SourceStructure?.[src];
-    for(const heading of display?.before?.[item.id]||[]) {
+    const display=window.SourceStructure?.[src];
+    for(const heading of display?.before?.[reviewMode?item.row_id:item.id]||[]) {
       close();
       const level=heading.level===2?'h2':'h3';
       html+='<'+level+' class="reading-source-heading reading-source-heading--documented">'+esc(heading.text)+'</'+level+'>';
@@ -305,59 +303,7 @@ function readingReviewRows() {
   const aboutId=candidates.find(row=>row.about_id===readingSourceId)?.about_id || selected?.about_id || candidates[0]?.about_id;
   return candidates.filter(row=>row.about_id===aboutId);
 }
-function readingReviewAnnotation(selected) {
-  if (!selected) return '<div class="reading-placeholder"><p>Choose a source passage on the left to review its tags.</p><p>You can use the visitor workspace without changing the published research data.</p></div>';
-  const proposed = selected.original || {};
-  return '<div class="reading-review-form">' +
-    '<div class="reading-review-meta"><strong>' + esc(selected.row_id) + '</strong><span>' + esc(rowStatus(selected)) + '</span></div>' +
-    '<div class="reading-review-fields">' + CODE.map(field=>codeField(field,selected)).join('') +
-      '<div class="field"><label for="adjudicator-note">Annotations / reasoning</label>' +
-      '<textarea id="adjudicator-note" data-adjudicator-note rows="3">' + esc(selected.annotations||'') + '</textarea></div>' +
-    '</div>' +
-    '<div class="reading-review-confirmations">' +
-      (state.owner ? '<label class="check"><input id="source-checked" type="checkbox" ' + (readingSourceVerified?'checked':'') + '> I independently verified the source wording.</label>' : '<p>Your decisions stay in this browser until exported.</p>') +
-    '</div>' +
-  '</div>';
-}
-function adjudicator() {
-  readingEnsureReviewYear();
-  const rows = readingReviewRows();
-  const selected = rows.find(row=>row.row_id === state.selected) || rows[0];
-  if(selected && selected.row_id !== state.selected) state.selected=selected.row_id;
-  const name = R.find(pair=>pair[0]===state.region)?.[1] || 'Organization';
-  const left = readingHighlightRows(rows,selected?.row_id,true) +
-    (selected ? '<div class="reading-source-edit">' +
-      (safeUrl(selected.source_url) ? '<a href="' + esc(safeUrl(selected.source_url)) + '" target="_blank" rel="noopener noreferrer">Open source / Wayback ↗</a>' : '<p>No source URL available.</p>') +
-      '<details><summary>Review source wording / corrections</summary>' +
-        (state.owner ? '<p>Original source wording is read-only. Record a correction below.</p>' :
-          '<label for="verbatim-text">Visitor copy of the verbatim wording</label><textarea id="verbatim-text" data-verbatim-text rows="3">' + esc(selected.verbatim_text||selected.text||'') + '</textarea>') +
-        '<label for="corrected-text">Corrected wording</label><textarea id="corrected-text" data-adjudicator-text rows="3">' + esc(selected.corrected_text||'') + '</textarea>' +
-        (state.owner ? '<label class="check"><input id="recoded" type="checkbox" ' + (readingRecoded?'checked':'') + '> I renewed coding after correcting wording.</label>' : '') +
-      '</details></div>' : '');
-  const actions = '<div class="reading-review-actions">' +
-    '<button type="button" class="reading-approve" data-approve ' + (selected?'':'disabled') + ' title="Accept the reviewed tags">✓ <span>Approve</span></button>' +
-    '<button type="button" class="reading-reject" data-reject ' + (selected?'':'disabled') + ' title="Reject the proposed coding, not the source">× <span>Reject</span></button>' +
-    '<button type="button" class="reading-export" ' + (state.owner?'data-export-xlsx':'data-export-json') + '>Export all</button></div>';
-  const right = '<header class="reading-review-head"><h2>Annotations</h2>' + actions + '</header>' +
-    '<div class="reading-scroll">' + readingReviewAnnotation(selected) + '</div>';
-  const tools = '<div class="reading-review-toolbar"><span>' + (state.owner?'Private researcher · Alfred':'Local visitor workspace') + '</span>' +
-    '<button type="button" data-connect>' + (state.owner?'Refresh researcher mode':'Connect researcher mode') + '</button>' +
-    (!state.owner ? '<button type="button" data-new>New row</button><button type="button" data-import-json>Import review JSON</button>' : '') +
-    '<button type="button" data-review-prev ' + (rows.length?'':'disabled') + '>← Previous</button>' +
-    '<button type="button" data-review-next ' + (rows.length?'':'disabled') + '>Next →</button>' +
-    '<input id="adjudicator-import" type="file" accept="application/json" hidden></div>' +
-    '<p class="reading-review-notice" role="status">' + esc(state.adjudicatorNotice || 'Select a highlighted clause to inspect and change proposed tags.') + '</p>';
-  const candidates=readingReviewCandidates();
-  const pageIds=[...new Set(candidates.map(row=>row.about_id))];
-  const sourceChoices=pageIds.map(id=>{
-    const row=candidates.find(x=>x.about_id===id);
-    const linked=state.language?.docs?.find(d=>d.id===id);
-    return {id,source_url:row.source_url||linked?.url||'',date:row.capture_date||linked?.date||''};
-  });
-  const source=sourceChoices.find(x=>x.id===selected?.about_id)||sourceChoices[0]||null;
-  const layout = readingScaffold(true,left,right,rows,source, 'About us',name+' · '+(state.year||'No date'),readingSourcePicker(sourceChoices,source));
-  return layout.replace('<div class="reading-panels">',tools+'<div class="reading-panels">');
-}
+function adjudicator(){return ''; /* replaced by canonical-workflow.js */}
 document.addEventListener('click', async event => {
   const button = event.target.closest('[data-review-row],[data-review-prev],[data-review-next]');
   if(!button) return;
@@ -370,10 +316,7 @@ document.addEventListener('click', async event => {
     id = rows[(ix + (button.hasAttribute('data-review-prev')? rows.length-1:1))%rows.length]?.row_id;
   }
   if (!id) return;
-  readingSourceVerified = false;
-  readingRecoded = false;
-  if(state.owner) await selectOwnerRow(id);
-  else { state.selected=id; render(); }
+  state.selected=id;render();
 },true);
 document.addEventListener('change', event => {
   if(event.target.matches('[data-reading-source]')) { readingSourceId=event.target.value;state.selected=null;render(); }
