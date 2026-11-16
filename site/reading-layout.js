@@ -315,7 +315,15 @@ document.addEventListener('click', async event => {
     id = rows[(ix + (button.hasAttribute('data-review-prev')? rows.length-1:1))%rows.length]?.row_id;
   }
   if (!id) return;
-  state.selected=id;render();
+  state.selected=id;
+  const promise=render();
+  if(typeof matchMedia==='function' && matchMedia('(max-width: 820px)').matches){
+    Promise.resolve(promise).then(()=>{
+      if(state.route!=='adjudicator')return;
+      const annotation=document.querySelector('.reading-review .reading-annotations');
+      if(annotation)annotation.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+    });
+  }
 },true);
 document.addEventListener('change', event => {
   if(event.target.matches('[data-reading-source]')) { readingSourceId=event.target.value;state.selected=null;render(); }

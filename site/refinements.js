@@ -288,6 +288,11 @@
     if(scroller){scroller.innerHTML=readingAnnotations(selected);scroller.scrollTop=0;}
     document.querySelectorAll('.reading-language [data-excerpt]').forEach(node=>
       node.setAttribute('aria-pressed',String(node.dataset.excerpt===state.selected)));
+    // On phones the annotation card follows the full source text.
+    if(selected && typeof matchMedia==='function' && matchMedia('(max-width: 820px)').matches) {
+      const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+      panel.scrollIntoView({block:'start',behavior:reduced?'instant':'smooth'});
+    }
   }
 
   // The full About page is reconstructed using paragraph/list locators already

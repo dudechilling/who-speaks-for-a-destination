@@ -1,0 +1,46 @@
+name: Mobile browser QA
+on:
+  push:
+    branches:
+      - main
+      - steward/mobile-responsive-review
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  responsive:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Stage canonical workbook and spreadsheet library
+        run: |
+          mkdir -p site/data site/vendor
+          cp RDMO_about_coding_review.xlsx site/data/language.xlsx
+          cp governance.xlsx site/data/governance.xlsx
+          curl -fsSL --retry 3 -m 45 https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js -o site/vendor/xlsx.full.min.js
+          printf '%s\n' 'cc015130aa8521e7f088f88898eba949ccdcbfb38df0bd129b44b7273c3a6f41  site/vendor/xlsx.full.min.js' | sha256sum -c -
+      - name: Install headless browser
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Test phone and tablet layouts
+        run: |
+          python3 -m http.server 8844 --bind 127.0.0.1 --directory site > /tmp/mobile-site.log 2>&1 &
+          node site/tests/mobile-browser.qa.cjs
+      - name: Keep browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-review-screenshots
+          path: mobile-screenshots/
+          if-no-files-found: ignore
+          retention-days: 5

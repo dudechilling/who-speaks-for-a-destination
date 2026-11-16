@@ -280,10 +280,25 @@
      if(Number.isFinite(y)){state.year=y;state.selected=null;render();}
    }
  },true);
+ // Preserve a page's scroll position, but reset on route, region or year changes.
+ let lastRoute=null,lastRegion=null,lastYear=null;
  render=async function unifiedRender(){
+   const route=state.route,region=state.region,year=state.year;
+   const shouldReset=route!==lastRoute || region!==lastRegion || year!==lastYear;
    await originalRender();
-   const meta=document.querySelector('#view .corner-meta');
+   const view=document.querySelector('#view');
+   const meta=view?.querySelector('.corner-meta');
    if(meta)meta.textContent='Thompson Rivers University | CMNS 3500 | Fall 2026 · Earl Healy';
+   if(view&&shouldReset)view.scrollTop=0;
+   if(typeof matchMedia==='function'&&matchMedia('(max-width: 820px)').matches){
+     const strip=view?.querySelector('.rdmo-tabs');
+     const current=strip?.querySelector('.region-button[aria-pressed="true"]');
+     if(strip&&current&&strip.scrollWidth>strip.clientWidth){
+       const a=strip.getBoundingClientRect(),b=current.getBoundingClientRect();
+       strip.scrollLeft += b.left-a.left-(a.width-b.width)/2;
+     }
+   }
+   lastRoute=route;lastRegion=region;lastYear=year;
  };
  window.CanonicalWorkbook={reviewedWorkbook,exportCanonical};
 })();
