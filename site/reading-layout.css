@@ -120,3 +120,21 @@
 @media(prefers-reduced-motion:reduce){.reading-design *{transition:none!important}}
 .reading-source-heading button{font:inherit;color:inherit;text-align:left;border:0;background:transparent;padding:2px 1px;cursor:pointer}
 .reading-source-heading button:hover,.reading-source-heading button[aria-pressed=true]{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
+
+/* Retain documented paragraph and list boundaries from workbook source locations. */
+.reading-flow p{margin:0 0 1.05em}
+.reading-flow ol,.reading-flow ul{margin:0 0 1.05em;padding:0 0 0 clamp(24px,2vw,34px);list-style-position:outside}
+.reading-flow ol{list-style-type:decimal}
+.reading-flow ul{list-style-type:disc}
+.reading-flow li{margin:0 0 .38em;padding:0 2px 0 0}
+.reading-flow li::marker{color:#4d613e;font-size:.95em;font-weight:600}
+.reading-source-other,.reading-source-teaser,.reading-source-caption,.reading-source-button,.reading-source-footer{margin:0 0 .65em}
+.reading-source-teaser{padding:3px 0 5px;border-bottom:1px solid #99a9914f}
+.reading-source-caption,.reading-source-footer{font-size:.87em;color:#657660}
+.reading-source-button .reading-highlight{padding:4px 8px;border:1px solid #96aa8e;background:#e4ead9;display:inline-block}
+.reading-document-name:not(:first-child){margin-top:1.1em}
+.reading-footnotes .reading-source-citation,.reading-footnotes .reading-source-unavailable{display:block;flex:0 1 min(49%,460px);min-width:0;border-top:2px solid #334631;background:transparent;padding:5px 2px 0;color:#2d4731;text-align:left;font:clamp(11px,.87vw,15px)/1.3 var(--sans);text-decoration:none;overflow-wrap:anywhere}
+.reading-footnotes .reading-source-citation:hover{text-decoration:underline;text-underline-offset:3px}
+.reading-source-picker{max-width:49%;min-width:140px;display:flex;align-items:center;gap:8px;font:clamp(10px,.7vw,12px)/1.15 var(--mono);color:#556a50}
+.reading-source-picker select{min-width:0;flex:1;max-width:240px;background:#f2f5e8;border:1px solid #a1b398;padding:5px 6px;color:#395741}
+@media(max-width:620px){.reading-flow ol,.reading-flow ul{padding-left:22px}.reading-footnotes .reading-source-citation,.reading-footnotes .reading-source-unavailable{flex:0 0 47%;font-size:11px}.reading-source-picker{max-width:none;min-width:0;width:100%;order:2}}

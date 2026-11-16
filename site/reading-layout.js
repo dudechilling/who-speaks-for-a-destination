@@ -14,6 +14,7 @@ const READING_PROCESS_NAMES = Object.freeze({
 const READING_PROCESS_ORDER = ['material','relational','verbal','mental','existential','behavioural','unclear','not_applicable','other'];
 let readingSourceVerified = false;
 let readingRecoded = false;
+let readingSourceId = null;
 
 function readingProcessKey(value) {
   const v = String(value || '').trim().toLowerCase();
@@ -22,15 +23,31 @@ function readingProcessKey(value) {
 function readingLabel(value, fallback) {
   return esc(value === undefined || value === null || value === '' ? (fallback || 'Not specified') : value);
 }
+
 function readingRecords(region, year) {
   const data = state.language;
+  const availableSources = (data?.docs || []).filter(x => x.region === region && x.year === year);
+  const sameYear = (data?.clauses || []).filter(x => x.region === region && x.year === year);
+  const activeClause = sameYear.find(x => x.id === state.selected);
+  const chosen = availableSources.find(x => x.id === readingSourceId) ||
+    availableSources.find(x => x.id === activeClause?.source) || availableSources[0] || null;
+  const clauses = chosen ? sameYear.filter(x => x.source === chosen.id) : [];
   return {
-    clauses: (data?.clauses || []).filter(x => x.region === region && x.year === year && String(x.text || '').trim()),
-    sources: (data?.docs || []).filter(x => x.region === region && x.year === year)
+    clauses: readingSortRows(clauses),
+    sources: chosen ? [chosen] : [],
+    availableSources
   };
+}
+function readingSortRows(rows) {
+  return rows.map((r,index)=>({r,index})).sort((a,b)=>
+    Number.isFinite(a.r.source_order) && Number.isFinite(b.r.source_order)
+      ? a.r.source_order-b.r.source_order || a.index-b.index
+      : a.index-b.index
+  ).map(x=>x.r);
 }
 function readingDateLabel(value) {
   if (!value) return 'Date not recorded';
+  if (typeof value==='number' && typeof XLSX!=='undefined') { const parts=XLSX.SSF.parse_date_code(value); if(parts) return parts.y+'-'+String(parts.m).padStart(2,'0')+'-'+String(parts.d).padStart(2,'0'); }
   const d = new Date(value);
   return Number.isNaN(d.getTime()) ? String(value) : d.toISOString().slice(0,10);
 }
@@ -52,39 +69,95 @@ function readingTabs() {
     R.map(pair => '<button type="button" data-region="' + esc(pair[0]) + '" aria-pressed="' + (pair[0] === state.region) + '">' + esc(pair[1]) + '</button>').join('') +
     '</nav>';
 }
+
+function readingSourceBlockKey(item) {
+  const explicit = item.block_id || item.paragraph_id;
+  if (explicit) return 'block:' + explicit;
+  const loc = String(item.section || '');
+  const xpath = loc.split(/\s*[;|]\s*/,1)[0].trim();
+  // The original public workbook records the DOM paragraph location, before character offsets.
+  if (/(?:^|\/)p(?:\[\d+\])?$/.test(xpath)) return 'dom:' + xpath;
+  const named = loc.match(/\bparagraph\s+(\d+)\b/i);
+  if (named) return 'named:' + named[1] + ':' + loc.split('|')[0].trim();
+  // The newer workbook retains page_section, but no paragraph-specific locator.
+  // Group consecutive clauses within one section, while keeping headings, lists and
+  // standalone material as hard boundaries. A future block_id takes precedence.
+  return loc && !loc.includes('/') ? 'section:' + loc : null;
+}
 function readingHighlightRows(rows, selectedId, reviewMode) {
   if (!rows.length) return '<p class="reading-no-source" role="status">No captured About-page passages are available for this organization and year. Choose another observed source date.</p>';
-  let html = '<div class="reading-flow" aria-label="Source passages in workbook order">';
-  let paragraphOpen = false;
-  let previousSource = null;
-  let previousSection = null;
-  for (const item of rows) {
-    const id = reviewMode ? item.row_id : item.id;
-    const text = reviewMode ? (item.verbatim_text || item.text || '') : item.text;
-    const src = reviewMode ? item.about_id : item.source;
-    const section = String(item.section || '');
-    const type = String(item.type || 'clause').toLowerCase();
-    const category = readingProcessKey(reviewMode ? (item.draft?.process_type || item.original?.process_type || '') : item.process);
-    if (previousSource !== src) {
-      if (paragraphOpen) { html += '</p>'; paragraphOpen = false; }
-      html += '<div class="reading-document-name">' + esc(src || 'Unidentified source') + '</div>';
-    } else if (section && section !== previousSection) {
-      if (paragraphOpen) { html += '</p>'; paragraphOpen = false; }
-    }
-    if (type === 'heading' && !reviewMode) {
-      if (paragraphOpen) { html += '</p>'; paragraphOpen = false; }
-      html += '<h3 class="reading-source-heading"><button type="button" data-excerpt="' + esc(id) + '" aria-pressed="' + (selectedId === id) + '" title="Inspect heading record" >' + esc(text) + '</button></h3>';
-    } else {
-      if (!paragraphOpen) { html += '<p>'; paragraphOpen = true; }
-      const buttonAttribute = reviewMode ? 'data-review-row' : 'data-excerpt';
-      const displayText = text.trim() || (reviewMode ? id + ' · Select to load private wording' : 'Empty passage');
-      html += '<button type="button" class="reading-highlight reading-highlight--' + category + '" ' + buttonAttribute + '="' + esc(id) + '" aria-pressed="' + (selectedId === id) + '" aria-label="' + esc(id + ': ' + displayText) + '" title="' + esc(READING_PROCESS_NAMES[category]) + '">' + esc(displayText) + '</button> ';
-    }
-    previousSource = src;
-    previousSection = section;
+  let html='<div class="reading-flow" aria-label="Source content, following workbook order">';
+  let tag=null, key=null, listNumber=null, previousSource=null;
+  function close() {
+    if(tag) html+='</'+tag+'>';
+    tag=null;key=null;listNumber=null;
   }
-  if (paragraphOpen) html += '</p>';
-  return html + '</div>';
+  function enter(nextTag,nextKey=null,start=null) {
+    if(tag===nextTag&&key===nextKey&&nextKey!==null) return;
+    close();
+    tag=nextTag;key=nextKey;
+    html+='<'+nextTag+(nextTag==='ol'&&Number.isInteger(start)?' start="'+start+'"':'')+'>';
+    if(nextTag==='ol') listNumber=(Number.isInteger(start)?start:1)-1;
+  }
+  function control(item,content) {
+    const id=reviewMode?item.row_id:item.id;
+    const field=reviewMode?'data-review-row':'data-excerpt';
+    const category=readingProcessKey(reviewMode?(item.draft?.process_type||item.original?.process_type||''):item.process);
+    const visible=String(content).trim();
+    const full=String(reviewMode?(item.verbatim_text||item.text||''):item.text||'').trim();
+    return '<button type="button" class="reading-highlight reading-highlight--'+category+'" '+
+      field+'="'+esc(id)+'" aria-pressed="'+(id===selectedId)+'" aria-label="'+esc(id+': '+full)+'" title="'+esc(READING_PROCESS_NAMES[category])+'">'+esc(visible)+'</button>';
+  }
+  function addList(item,content,number=null,bullet=false) {
+    const kind=bullet?'ul':'ol';
+    if (tag===kind && kind==='ol' && Number.isInteger(number) && number!==listNumber+1) close();
+    if(tag!==kind) enter(kind,'list:'+kind,number);
+    html+='<li>'+control(item,content)+'</li>';
+    if(kind==='ol')listNumber++;
+  }
+  for(const item of readingSortRows(rows)) {
+    const src=reviewMode?item.about_id:item.source;
+    const content=String(reviewMode?(item.verbatim_text||item.text||''):item.text||'').trim();
+    if(!content)continue;
+    const type=String(item.type||item.text_type||'clause').toLowerCase();
+    if(src!==previousSource) {
+      close();
+      html+='<div class="reading-document-name">'+esc(src||'Unidentified source')+'</div>';
+      previousSource=src;
+    }
+    if(type==='heading') {
+      close();
+      const id=reviewMode?item.row_id:item.id;
+      const attr=reviewMode?'data-review-row':'data-excerpt';
+      html+='<h3 class="reading-source-heading"><button type="button" '+attr+'="'+esc(id)+'" aria-pressed="'+(id===selectedId)+'" title="Inspect source heading">'+esc(content)+'</button></h3>';
+      continue;
+    }
+    const numbered=content.match(/^(\d+)[.)]\s+([\s\S]+)$/);
+    const bulleted=content.match(/^(?:[•●▪\-*])\s+([\s\S]+)$/);
+    const intro=content.match(/^(.+?:)\s+(1)[.)]\s+([\s\S]+)$/);
+    if(type==='list_item'||numbered||bulleted) {
+      addList(item,numbered?numbered[2]:bulleted?bulleted[1]:content,numbered?Number(numbered[1]):null,!!bulleted||(!numbered&&type==='list_item'));
+      continue;
+    }
+    if(intro) {
+      enter('p','intro:'+String(item.id||item.row_id));
+      html+=control(item,intro[1]);
+      close();
+      addList(item,intro[3],Number(intro[2]),false);
+      continue;
+    }
+    if(['button','teaser','caption','footer','other'].includes(type)) {
+      close();
+      const cls='reading-source-'+type;
+      html+='<div class="'+cls+'">'+control(item,content)+'</div>';
+      continue;
+    }
+    const block=readingSourceBlockKey(item);
+    if(tag!=='p'||key!==block||block===null)enter('p',block);
+    html+=control(item,content)+' ';
+  }
+  close();
+  return html+'</div>';
 }
 function readingLegend(rows, reviewMode) {
   const counts = {};
@@ -125,27 +198,40 @@ function readingHeader(reviewMode) {
     '<header class="reading-heading"><div><h1 class="page-title">' + title + '</h1><p class="page-subtitle">' + subtitle + '</p></div>' +
     readingSourceTools(reviewMode) + '</header>';
 }
-function readingFooter(rows, sources, reviewMode) {
-  const chosen = sources?.[0];
-  const count = rows.length;
-  const detail = (chosen?.date ? 'Capture: ' + readingDateLabel(chosen.date) + ' · ' : '') +
-    count + (reviewMode ? ' available review rows' : ' workbook passages') +
-    ' · ' + (reviewMode ? (state.owner ? 'Private reviewer' : 'Local visitor workspace') : 'AI-proposed; human review pending');
-  return '<div class="reading-legend" aria-label="SFL process highlight key"><span class="reading-legend-label">SFL concepts · Proposed</span>' +
-    readingLegend(rows,reviewMode) + '</div>' +
-    '<div class="reading-footnotes"><button type="button" data-open-sources>Footnotes for sources</button><span>' +
-    esc(detail) + '</span></div>';
+
+function readingFooter(rows, source, reviewMode) {
+  const count=rows.length;
+  const date=source?.date||source?.capture_date||'';
+  const url=safeUrl(source?.url||source?.source_url);
+  const sourceId=String(source?.id||source?.about_id||'About page');
+  const orgName=R.find(pair=>pair[0]===state.region)?.[1]||'RDMO';
+  const archive=url&&new URL(url).hostname==='web.archive.org';
+  const citation=url
+    ? '<a class="reading-source-citation" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" title="'+esc(url)+'">Source: '+esc(orgName)+' About ('+esc(sourceId)+')'+
+      (date?' · '+(archive?'Archived ':'Retrieved ')+esc(readingDateLabel(date)):'')+' ↗</a>'
+    : '<span class="reading-source-unavailable">Source link unavailable for the displayed About page</span>';
+  const detail=count+(reviewMode?' available review rows':' workbook passages')+
+    ' · '+(reviewMode?(state.owner?'Private reviewer':'Local visitor workspace'):'AI-proposed; human review pending');
+  return '<div class="reading-legend" aria-label="SFL process highlight key"><span class="reading-legend-label">SFL concepts · Proposed</span>'+
+    readingLegend(rows,reviewMode)+'</div>'+
+    '<div class="reading-footnotes">'+citation+'<span>'+esc(detail)+'</span></div>';
 }
-function readingScaffold(reviewMode, left, right, rows, sources, title, selectionLabel) {
+function readingSourcePicker(options,selected) {
+  if(options.length<=1) return '';
+  return '<label class="reading-source-picker">About-page capture <select data-reading-source aria-label="Select About-page capture">'+
+    options.map(x=>'<option value="'+esc(x.id)+'" '+(x.id===selected?.id?'selected':'')+'>'+esc(x.id)+' · '+esc(readingDateLabel(x.date||x.capture_date))+'</option>').join('')+
+    '</select></label>';
+}
+function readingScaffold(reviewMode, left, right, rows, source, title, selectionLabel, sourcePicker='') {
   return '<div class="reading-design ' + (reviewMode?'reading-review':'reading-language') + '">' +
     readingHeader(reviewMode) + readingTabs() +
-    '<div class="reading-date-strip" aria-label="Available source capture years">' + timeline() + '</div>' +
+    '<div class="reading-date-strip" aria-label="Available source capture years">' + readingTimeline(reviewMode) + '</div>' +
     '<div class="reading-panels">' +
       '<section class="reading-card reading-about" aria-label="Source text">' +
-        '<header><h2>' + esc(title) + '</h2><span>' + esc(selectionLabel) + '</span></header>' +
+        '<header><h2>' + esc(title) + '</h2>'+sourcePicker+'<span>' + esc(selectionLabel) + '</span></header>' +
         '<div class="reading-scroll">' + left + '</div></section>' +
       '<section class="reading-card reading-annotations" aria-label="Annotations">' + right + '</section>' +
-    '</div>' + readingFooter(rows,sources,reviewMode) + '</div>';
+    '</div>' + readingFooter(rows,source,reviewMode) + '</div>';
 }
 function language() {
   chooseYear();
@@ -156,9 +242,13 @@ function language() {
   const left = readingHighlightRows(result.clauses,selected?.id,false);
   const right = '<header><h2>Annotations</h2><span>' + (selected ? esc(selected.id) : 'Select a clause') + '</span></header>' +
     '<div class="reading-scroll" aria-live="polite">' + readingAnnotations(selected,source) + '</div>';
-  return readingScaffold(false,left,right,result.clauses,result.sources,'About us',name + ' · ' + (state.year||'No date'));
+  return readingScaffold(false,left,right,result.clauses,source,'About us',name + ' · ' + (state.year||'No date'),readingSourcePicker(result.availableSources,source));
 }
 function readingReviewPeriod(row) {
+  // The authenticated reviewer reads the current private workbook. Never assign
+  // its rows a year taken from a different public workbook.
+  const captured=row.capture_date ? dateYear(row.capture_date) : null;
+  if(Number.isFinite(captured)) return captured;
   const aboutId = String(row.about_id || '');
   const d = state.language?.docs?.find(d => d.id === aboutId);
   if (d?.year) return d.year;
@@ -167,8 +257,38 @@ function readingReviewPeriod(row) {
   if (match && years.length) return match[1].toUpperCase()==='H' ? years[0] : years[years.length-1];
   return null;
 }
+
+function readingReviewYears() {
+  return [...new Set(currentRows().map(readingReviewPeriod).filter(Number.isFinite))].sort((a,b)=>a-b);
+}
+function readingEnsureReviewYear() {
+  const all=readingReviewYears();
+  if(!all.length){ state.year=null;return; }
+  if(all.includes(state.year))return;
+  const region=readingReviewCandidatesByRegion().map(readingReviewPeriod);
+  state.year=region.find(Number.isFinite)??all[0];
+}
+function readingReviewCandidatesByRegion() {
+  return currentRows().filter(row=>rid(row.about_id)===state.region);
+}
+function readingTimeline(reviewMode) {
+  if(!reviewMode)return timeline();
+  const ys=readingReviewYears();
+  if(!ys.length)return '<section class="timeline"><p class="empty">No dated review source records.</p></section>';
+  const i=Math.max(0,ys.indexOf(state.year)),percent=ys.length>1?i/(ys.length-1)*100:0;
+  return '<section class="timeline" aria-label="Source chronology"><div class="timeline-labels">'+
+    ys.map((year,n)=>'<button type="button" data-year="'+year+'" style="left:'+(ys.length>1?n/(ys.length-1)*100:50)+'%" aria-current="'+(year===state.year)+'">'+year+'</button>').join('')+
+    '</div><div class="timeline-track" style="--progress:'+percent+'%"><input id="review-time-slider" type="range" min="0" max="'+(ys.length-1)+'" step="1" value="'+i+'" aria-label="Select reviewer source year"></div>'+
+    '<div class="timeline-caption"><span>OBSERVED SOURCE DATES</span><span>SELECTED '+state.year+'</span></div></section>';
+}
+function readingReviewCandidates() {
+  return readingSortRows(currentRows().filter(row => rid(row.about_id) === state.region && readingReviewPeriod(row) === state.year));
+}
 function readingReviewRows() {
-  return currentRows().filter(row => rid(row.about_id) === state.region && readingReviewPeriod(row) === state.year);
+  const candidates=readingReviewCandidates();
+  const selected=candidates.find(row=>row.row_id===state.selected);
+  const aboutId=candidates.find(row=>row.about_id===readingSourceId)?.about_id || selected?.about_id || candidates[0]?.about_id;
+  return candidates.filter(row=>row.about_id===aboutId);
 }
 function readingReviewAnnotation(selected) {
   if (!selected) return '<div class="reading-placeholder"><p>Choose a source passage on the left to review its tags.</p><p>You can use the visitor workspace without changing the published research data.</p></div>';
@@ -185,7 +305,7 @@ function readingReviewAnnotation(selected) {
   '</div>';
 }
 function adjudicator() {
-  chooseYear();
+  readingEnsureReviewYear();
   const rows = readingReviewRows();
   const selected = rows.find(row=>row.row_id === state.selected) || rows[0];
   if(selected && selected.row_id !== state.selected) state.selected=selected.row_id;
@@ -212,7 +332,15 @@ function adjudicator() {
     '<button type="button" data-review-next ' + (rows.length?'':'disabled') + '>Next →</button>' +
     '<input id="adjudicator-import" type="file" accept="application/json" hidden></div>' +
     '<p class="reading-review-notice" role="status">' + esc(state.adjudicatorNotice || 'Select a highlighted clause to inspect and change proposed tags.') + '</p>';
-  const layout = readingScaffold(true,left,right,rows,[], 'About us',name+' · '+(state.year||'No date'));
+  const candidates=readingReviewCandidates();
+  const pageIds=[...new Set(candidates.map(row=>row.about_id))];
+  const sourceChoices=pageIds.map(id=>{
+    const row=candidates.find(x=>x.about_id===id);
+    const linked=state.language?.docs?.find(d=>d.id===id);
+    return {id,source_url:row.source_url||linked?.url||'',date:row.capture_date||linked?.date||''};
+  });
+  const source=sourceChoices.find(x=>x.id===selected?.about_id)||sourceChoices[0]||null;
+  const layout = readingScaffold(true,left,right,rows,source, 'About us',name+' · '+(state.year||'No date'),readingSourcePicker(sourceChoices,source));
   return layout.replace('<div class="reading-panels">',tools+'<div class="reading-panels">');
 }
 document.addEventListener('click', async event => {
@@ -233,6 +361,8 @@ document.addEventListener('click', async event => {
   else { state.selected=id; render(); }
 },true);
 document.addEventListener('change', event => {
+  if(event.target.matches('[data-reading-source]')) { readingSourceId=event.target.value;state.selected=null;render(); }
+  if(event.target.id==='review-time-slider'){ state.year=readingReviewYears()[Number(event.target.value)]??null;state.selected=null;render(); }
   if(event.target.id==='source-checked') readingSourceVerified=event.target.checked;
   if(event.target.id==='recoded') readingRecoded=event.target.checked;
 },true);
