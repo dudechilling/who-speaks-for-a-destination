@@ -2,6 +2,12 @@
 
 ## Scope and change in design
 
+### Longitudinal intake status
+
+The ten sources first published with this repository are anchors, not the intended final collection. A retained-source reconciliation began on 2026-11-24. Its source-level inventory is `corpus/longitudinal_inventory.csv`; its coverage matrix is `corpus/longitudinal_coverage.csv`. Both preserve a distinction between a candidate, a duplicate, an exclusion, a retrieval or provenance problem, and a year that has not yet had a dedicated About-page sweep. They do not establish absence of a page in an uncovered year.
+
+The workbook remains the single canonical language dataset. The inventory and coverage matrix are research-control records only. A verified source will be added to the workbook with exact capture provenance, headings and paragraph boundaries. New text enters as unsegmented and uncoded. Existing machine proposals remain historical development records and are not copied into longitudinal material. Full captures stay in the private research workspace. Public excerpts require an explicit, case-specific publication basis.
+
 This study compares institutional language in ten fixed About webpages: one historical and one contemporary page for five British Columbia regional destination marketing organizations. It asks how each page explains organizational identity, work, constituents or beneficiaries, responsibilities, and claimed institutional authority.
 
 The original October proposal described three linked datasets on language, governance, and performance. That proposal was replaced on 2026-11-09 with this narrower study because a bounded, reproducible clause corpus can answer the linguistic question without treating promotional self-description as evidence of actual authority. Board composition, director affiliations, membership eligibility, voting rights, governance arrangements, and decision-making authority are outside this phase.
