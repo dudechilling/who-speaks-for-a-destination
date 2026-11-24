@@ -44,6 +44,7 @@ test('one canonical workbook round-trips an adjudication without rewriting AI pr
  c.state.language=original;
  assert.ok(original.docs.length>=10);
  assert.ok(original.rows>=194);
+ assert.equal(original.docs.find(d=>d.id==='KR-2014').year,2014);
  assert.equal(c.window.LanguageMatrix.ui.view,'timeline');
  assert.equal(c.window.SourceStructure['VI-H'].blocks['VI-H-009'],
               c.window.SourceStructure['VI-H'].blocks['VI-H-012']);
