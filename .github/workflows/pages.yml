@@ -5,6 +5,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 concurrency:
@@ -70,5 +71,25 @@ jobs:
       - uses: actions/upload-pages-artifact@v4
         with:
           path: site
+      - name: Wait for uploaded Pages artifact to become discoverable
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 30); do
+            count=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts" --jq '[.artifacts[] | select(.name == "github-pages")] | length' || echo 0)
+            if [[ "$count" == "1" ]]; then
+              sleep 6
+              exit 0
+            fi
+            if [[ "$count" != "0" ]]; then
+              echo "Expected exactly one github-pages artifact; found $count" >&2
+              exit 1
+            fi
+            sleep 2
+          done
+          echo 'The github-pages artifact was not indexed within one minute' >&2
+          exit 1
       - id: deployment
         uses: actions/deploy-pages@v4
