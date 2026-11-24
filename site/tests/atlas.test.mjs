@@ -29,3 +29,9 @@ test('coding select values remain explicit and browser review controls exist',()
    assert.ok(workflow.includes(label),label);
  assert.doesNotMatch(workflow,/data-connect|data-import-json|data-export-json/);
 });
+
+test('the render loop selects all dock links and sets the active route correctly',()=>{
+  assert.match(app,/\$\$\('#dock a'\)\.forEach/);
+  assert.match(app,/setAttribute\('aria-current','page'\)/);
+  assert.doesNotMatch(app,/(?<!\$)\$\('#dock a'\)\.forEach/);
+});
