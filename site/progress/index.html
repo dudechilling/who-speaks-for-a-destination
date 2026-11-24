@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="theme-color" content="#f5f3e7">
+<title>Project progress | Who speaks for a destination?</title>
+<style>
+:root{color-scheme:light;--paper:#f5f3e7;--ink:#283c2e;--pine:#315d3e;--muted:#536b52;--line:#b3bfaa;--wash:#e9eddf;--rust:#93513c;--serif:Georgia,"Times New Roman",serif;--sans:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:1rem}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.58 var(--sans)}
+body::before{content:"";position:fixed;inset:0;background:url("../assets/images/topography.svg") center/cover no-repeat;opacity:.25;z-index:-1;pointer-events:none}
+main{max-width:1120px;margin:auto;padding:clamp(22px,5vw,72px)}
+h1,h2,h3,p{margin:0}
+h1{font:700 clamp(40px,6vw,76px)/.98 var(--serif);color:var(--pine);letter-spacing:-.045em;max-width:850px}
+h2{font:700 clamp(25px,3vw,34px)/1.2 var(--serif);color:var(--pine);letter-spacing:-.025em;margin-bottom:14px}
+h3{font-size:1.12rem;line-height:1.35;color:var(--pine)}
+p+p{margin-top:10px}
+a{color:#28573b;text-decoration:underline;text-underline-offset:3px}
+a:focus-visible{outline:3px solid var(--rust);outline-offset:4px}
+code{font: .9em ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere;color:#364e39}
+header{padding:0 0 26px;border-bottom:1px solid var(--line)}
+.kicker{font-size:.83rem;font-weight:650;color:var(--muted);margin-bottom:16px}
+.subtitle{font-size:1.07rem;color:var(--muted);margin-top:15px;max-width:760px}
+.status{display:grid;grid-template-columns:1fr auto;align-items:start;gap:16px;padding:20px 0;border-bottom:1px solid var(--line)}
+.status strong{color:var(--rust)}
+.deadline{text-align:right;font-size:.9rem;white-space:nowrap}
+.deadline b{display:block;font-size:1.1rem}
+.toc{display:flex;flex-wrap:wrap;gap:8px 22px;padding:17px 0 0;font-size:.9rem}
+section{margin-top:33px}
+.snapshot{background:var(--wash);border:1px solid var(--line);border-radius:8px;padding:20px 22px}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:0 0 16px}
+.metric b{display:block;color:var(--pine);font:700 2rem/1.2 var(--serif)}
+.metric span{display:block;font-size:.82rem;color:var(--muted)}
+.small{font-size:.86rem;color:var(--muted)}
+.phase{position:relative;display:grid;grid-template-columns:88px minmax(0,1fr);gap:20px;padding:20px 0;border-top:1px solid var(--line)}
+.phase-id{color:var(--pine);font:700 1.7rem/1.1 var(--serif)}
+.phase-status{font:600 .75rem/1.45 var(--sans);display:block;margin-top:7px;color:var(--muted)}
+.phase-status.current{color:var(--rust)}
+.owner{color:var(--muted);font-size:.82rem;font-weight:650;margin:4px 0 8px}
+.gate{margin-top:10px;font-size:.91rem;color:#405b40;border-left:3px solid #92aa91;padding-left:11px}
+.gate b{color:#315d3e}
+.parallel{padding:16px 18px;background:rgba(233,237,223,.75);border-left:3px solid #82967a;margin-top:12px}
+.parallel+.parallel{margin-top:10px}
+table{width:100%;border-collapse:collapse;text-align:left;font-size:.94rem}
+th,td{padding:11px 12px 11px 0;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:650;color:var(--pine)}
+td:first-child{width:24%;font-weight:650}
+.rule{padding:14px 0;border-top:1px solid var(--line)}
+.rule h3{font-size:1rem;margin-bottom:4px}
+footer{border-top:1px solid var(--line);margin-top:36px;padding:18px 0 0;color:var(--muted);font-size:.84rem}
+@media(max-width:650px){main{padding:24px 18px 40px}.status{grid-template-columns:1fr}.deadline{text-align:left;white-space:normal}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.phase{grid-template-columns:54px minmax(0,1fr);gap:12px}.phase-id{font-size:1.45rem}.phase-status{font-size:.7rem}.snapshot{padding:17px 14px}.parallel{padding:12px}.toc{gap:8px 16px}td:first-child{width:29%}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<p class="kicker">Who speaks for a destination? &middot; CMNS 3500 &middot; Fall 2026</p>
+<h1>Project progress</h1>
+<p class="subtitle">Working order, handoffs, decisions and release gates for the research atlas.</p>
+</header>
+<div class="status">
+<div><strong>Proposed workflow &middot; awaiting /approved</strong><p class="small">Revision 1 &middot; 24 November 2026 (Pacific time). No new coding structure is approved.</p></div>
+<div class="deadline">Submission deadline<b>30 Nov &middot; 9:00 a.m. PT</b></div>
+</div>
+<nav class="toc" aria-label="Page contents"><a href="#baseline">Current state</a><a href="#workflow">Working order</a><a href="#decisions">Decisions</a><a href="#rules">Session rules</a><a href="#checkpoint">Resume here</a></nav>
+
+<section id="baseline" aria-labelledby="baseline-title">
+<h2 id="baseline-title">Current state</h2>
+<div class="snapshot">
+<div class="metrics">
+<div class="metric"><b>5</b><span>RDMOs in scope</span></div>
+<div class="metric"><b>36</b><span>Source worksheets (10 anchors + 26 intake)</span></div>
+<div class="metric"><b>271</b><span>Text rows, not comparable clause counts</span></div>
+<div class="metric"><b>0</b><span>Published human review decisions</span></div>
+</div>
+<p class="small">Baseline inspected at <a href="https://github.com/dudechilling/who-speaks-for-a-destination/commit/788b4977535ac9f807e79483018d8ee8fff9602e">788b497</a>. <a href="https://github.com/dudechilling/who-speaks-for-a-destination/actions/runs/45480235728">Pages</a> and <a href="https://github.com/dudechilling/who-speaks-for-a-destination/actions/runs/45480235491">mobile QA</a> reported success for this revision. Governance has no board or source records. The <a href="https://github.com/dudechilling/who-speaks-for-a-destination/blob/788b4977535ac9f807e79483018d8ee8fff9602e/corpus/longitudinal_coverage.csv">coverage matrix</a> spans 1998–2026; 107 of 145 region-year entries are marked not yet checked. Source worksheets are not necessarily distinct textual versions or reviewed sources.</p>
+</div>
+<p style="margin-top:12px">The revised proposal and both feedback recordings have been reviewed using local automated transcripts. Instructor materials and the proposal support About-page analysis plus governance, human-coded reference pages, researcher adjudication and an interactive atlas. Final AI-use constraints and analytical date boundaries remain to be confirmed privately. No private feedback, transcript, grade or full source capture belongs on this page.</p>
+</section>
+
+<section id="workflow" aria-labelledby="workflow-title">
+<h2 id="workflow-title">Working order</h2>
+
+<article class="phase" id="p0">
+<div class="phase-id">00<span class="phase-status current">Awaiting approval</span></div>
+<div><h3>Approve the working order</h3><p class="owner">Researcher + coordinating ChatGPT session</p><p>Review this page and reply <code>/approved</code> or provide changes. Approval authorizes the workflow and handoffs only; it does not approve a codebook, classification, research conclusion or dataset publication beyond the specified source-preparation work.</p><p class="gate"><b>Checkpoint 00:</b> Record the approved workflow revision and current baseline. Issue exactly three handoff prompts after approval.</p></div>
+</article>
+
+<article class="phase" id="p1">
+<div class="phase-id">01<span class="phase-status">Next</span></div>
+<div><h3>Close the two old sessions; take over Codex</h3><p class="owner">Researcher relays prompts &middot; coordinator becomes sole decision register</p><p>The first two prompts terminate the previous Codex-advisory and academic-integrity discussions as active workstreams. Each session reads this workflow and returns one self-contained handoff: settled decisions, source locators, relevant constraints, unfinished work, conflicts, risks and the next safe action. The academic-integrity handoff separates instructor permission, draft policy and interpretation. No further repo edits or analysis from either old session.</p><p>The third prompt transfers the existing Codex run to this workflow. Codex stops obsolete actions at a safe boundary, reports branch/HEAD, dirty files, active jobs, unpushed changes and last tested/deployed revision, preserves its work, reconciles current main without force-pushing, then starts Phase 02A. Do not start another coding agent against the same checkout.</p><p class="gate"><b>Checkpoint 01:</b> Two handoffs received, Codex ownership and working state established, blockers recorded. Neither old session remains an independent source of instructions.</p></div>
+</article>
+
+<article class="phase" id="p2">
+<div class="phase-id">02<span class="phase-status">Parallel work</span></div>
+<div><h3>Prepare the corpus while settling the research design</h3>
+<div class="parallel"><h3>02A &middot; Codex: source-only intake and legacy reset</h3><p class="owner">Codex &middot; owns corpus, workbook and necessary compatibility changes</p><p>Reconcile retained private captures and the current inventory, then conduct a bounded region-by-year About-page sweep. Search across the proposed 1995–2026 collection window, including uncovered years; retain actual capture dates, URLs, source IDs, provenance, duplicates, exclusions, access failures and gaps. Distinguish a genuinely changed text from an identical capture. Use one systematic sweep plus targeted follow-up on material gaps; do not promise a page for every year or repeatedly chase irrecoverable captures.</p><p>Before clearing old analysis, preserve the exact pre-reset commit, workbook and any browser-local exports. Archive the legacy code columns, values and clause segmentation on a distinct, recoverable archival branch/reference without overwriting existing archival history. Record the archive location and checksum. Reconstruct source blocks from original evidence, preserve recovered and corrected wording separately, and retain headings, paragraphs, lists, order and links. Do not discard text while retiring clause boundaries.</p><p>Replace the active language workbook with a source-only structure; remove superseded coding columns and do not create new analytical fields. Update the loader, browser source-review/export functions, tests and Pages validation together where required for compatibility. Retire stale coding charts and controls temporarily; show source text and honest uncoded status. Preserve current navigation, layout and governance workbook. Publish eligible, bounded source excerpts only, with the recorded redistribution basis; keep full originals private. Verify the canonical XLSX, inventory, coverage, deployment and live timeline before handing off.</p><p class="gate"><b>Checkpoint 02A:</b> Corpus freeze candidate: archive recoverable; included/excluded sources and gaps documented; source-only workbook and site agree; no legacy proposals visible or active; validation passed. Exact revision, workbook checksum and deployment recorded. Source verification may still be pending.</p></div>
+<div class="parallel"><h3>02B &middot; Researcher + ChatGPT: alignment and codebook workshop</h3><p class="owner">Coordinator &middot; no app/workbook writes during 02A</p><p>Resolve the decision topics below through one interactive alignment review in chat, including options and free text. Reconcile both handoffs with Chris's teaching, the revised proposal and the researcher's own intentions. Ask follow-up questions only where a consequential choice remains. Confirm the research window, unit of analysis, hypothesis, comparison design, display, governance boundaries, AI rules and final deliverable. Keep interpretation and student assessment work under researcher control.</p><p>Workshop the simplest defensible codebook against a small set of authentic clauses, using examples as discussion material, not as pre-coded reference data. Provide a Markdown draft outside the repo for review. Iterate until the researcher issues <code>/accepted</code> for the exact version. No acceptance by silence, workflow approval or agent suggestion.</p><p class="gate"><b>Checkpoint 02B:</b> Decisions recorded, codebook draft version and human acceptance recorded. If the corpus track is still active, hold the accepted file for the integration gate; do not collide with Codex's work.</p></div>
+</div>
+</article>
+
+<article class="phase" id="p3">
+<div class="phase-id">03<span class="phase-status">Join gate</span></div>
+<div><h3>Install the accepted codebook and researcher interface</h3><p class="owner">Coordinator directs; one designated implementation writer</p><p>Start only after both Phase 02 checkpoints and a current source-only baseline. Publish the accepted Markdown at <code>site/content/home/codebook.md</code>, with stable code identifiers, definitions, permitted values, inclusion/exclusion rules, evidence examples and references. It is the authoritative fourth Home tab, the source for accessible tooltips and reviewer options, and the versioned Codex coding reference. Generate any machine-readable representation from it rather than maintain conflicting definitions.</p><p>Update the workbook schema, reader/export round trip, segmentation controls, Language timeline and comparison tables; preserve distinct source-review and coding states. Keep source passage and Clause analysis side by side on desktop and accessible in reading order on mobile. Colour-code source spans according to the accepted roles; link highlight, legend and explanation without relying on colour alone. Keep paragraphs, headings and lists faithful to the source. Update Governance links and concepts only where the accepted design requires it; no fabricated board records. Test import/export, split/combine, selection, local persistence, source links, empty states, keyboard and touch.</p><p class="gate"><b>Checkpoint 03:</b> Exact approved codebook version, schema and deployment match. Real desktop/mobile interaction and XLSX round-trip checks pass; researcher approves the usable coding interface before coding begins.</p></div>
+</article>
+
+<article class="phase" id="p4">
+<div class="phase-id">04<span class="phase-status">Human work</span></div>
+<div><h3>Verify sources and independently code the ten reference pages</h3><p class="owner">Researcher &middot; Codex may assist with source retrieval, not anchor classifications</p><p>Confirm the final included corpus and select the earliest and latest eligible, verified About-page version for each RDMO. Check source wording, completeness and original structure before segmentation. Code these ten pages from the accepted codebook without loading retired machine proposals; document uncertainties and changes to rules. For other pages, resolve source and segmentation questions before analytical coding; unknown or incomplete source material stays visibly unresolved.</p><p>Export and inspect the reference workbook, record the codebook revision and publish the human-original data. Preserve the source baseline and a separate reference checkpoint. Any substantive codebook revision returns to the acceptance gate and triggers consistent recoding of affected records.</p><p class="gate"><b>Checkpoint 04:</b> Ten researcher-coded reference pages, source-review evidence, accepted codebook version, validated export and published commit. The researcher confirms independence and decides whether examples are sufficient for a machine pilot.</p></div>
+</article>
+
+<article class="phase" id="p5">
+<div class="phase-id">05<span class="phase-status">Pilot then batch</span></div>
+<div><h3>Propose, evaluate and adjudicate remaining language codes</h3><p class="owner">Codex proposes; researcher decides</p><p>Use only the accepted codebook, verified reference examples and actual source text. Test a small, representative batch including ambiguous cases. Preserve model proposals, their version and evidence spans; check classification and segmentation consistency before scaling. Freeze the human-original reference data. The researcher reviews each proposal against its source, accepts or revises it and records unresolved decisions. Codex must not auto-approve, replace human decisions or reinterpret a changed codebook without review.</p><p>Working views include every available classification, including pending proposals, with an explicit provisional status. Each overview, chart and table reports its own denominator, human-original, human-accepted, human-revised and machine-pending shares, led by the total human-determined share. Show uncoded/excluded/missing data separately and never as zero occurrences. Comparative cells link to their supporting passages. Final interpretation uses only reviewed evidence, with actual coverage and limitations disclosed.</p><p class="gate"><b>Checkpoint 05:</b> Pilot approved; remaining proposals adjudicated within the final declared scope; inspected export published; all calculations and provenance footnotes reproduce workbook values. If the deadline forces narrower scope, record the exclusion and obtain researcher approval.</p></div>
+</article>
+
+<article class="phase" id="p6">
+<div class="phase-id">06<span class="phase-status">Governance</span></div>
+<div><h3>Build the board composition dataset</h3><p class="owner">Codex assists discovery and extraction; researcher verifies and interprets</p><p>Keep governance separate from the language workbook. Once source-only intake is stable, read-only governance source discovery may run during researcher language coding if it does not delay the critical path. Complete the board dataset after the language checkpoint: dated board observations, names, roles, documented affiliations, sectors, source URLs, coverage and verification status. Distinguish professional affiliation from a formal constituency mandate or voting authority; do not infer tenure, missing directors, identity or continuity from gaps. Preserve historical and contemporary identities and match periods as far as evidence permits.</p><p class="gate"><b>Checkpoint 06:</b> Researcher-reviewed board/source records, date and affiliation rules, denominators and gaps documented; governance timeline and comparative results verified against the distinct workbook.</p></div>
+</article>
+
+<article class="phase" id="p7">
+<div class="phase-id">07<span class="phase-status">Synthesis</span></div>
+<div><h3>Interpret the evidence and finish the site's content</h3><p class="owner">Researcher authors the argument; coordinator supports review and site integration</p><p>Evaluate the stated hypothesis across language, beneficiaries, institutional priorities and governance using the accepted design, including counterexamples and discordant changes. Explain SFL at the textual level and CDA at the text, discursive-practice and social-practice levels; use actual excerpts, source contexts and governance evidence. Do not infer actual redistribution of power, motives or causation from discourse alone. Complete the Home and Profiles content, methods, codebook, corpus notes, citations, AI disclosure and the required one-page assignment annotation using the researcher's own analysis and approved assistance. Replace editorial placeholders.</p><p class="gate"><b>Checkpoint 07:</b> Researcher approves position and claims, course concept application, source attribution, actual AI-use disclosure and annotation; public data match the final argument.</p></div>
+</article>
+
+<article class="phase" id="p8">
+<div class="phase-id">08<span class="phase-status">Release</span></div>
+<div><h3>Final technical, visual and researcher QA</h3><p class="owner">Implementation writer verifies; researcher navigates the live site</p><p>Verify the final workbooks, source links, codebook/tooltips, provenance figures, all five regions, historical controls, tables, profiles, governance, corpus, Home and disclosure. Exercise the actual deployed site at desktop and mobile sizes, keyboard and touch, zoom, text readability, contrast, scrolling and unavailable-source states. The researcher personally navigates the live mini-site and reports issues; resolve material defects and re-test the affected flows. Freeze the submission commit and confirm the required Moodle submission and annotation.</p><p class="gate"><b>Checkpoint 08:</b> Final deployed revision and tests recorded; researcher confirms usability, content and submission readiness. Only <code>/project_done</code> authorizes removal of this temporary page; preserve its final checkpoint privately or in Git history. Verify the unlinked route is removed on the live site without affecting the atlas.</p></div>
+</article>
+</section>
+
+<section id="decisions" aria-labelledby="decision-title">
+<h2 id="decision-title">Alignment decisions — still open</h2>
+<table>
+<thead><tr><th scope="col">Topic</th><th scope="col">Decision to settle in Phase 02B</th></tr></thead>
+<tbody>
+<tr><td>Scope and hypothesis</td><td>Actual historical bounds, source selection and relationship among priorities, beneficiaries and board representation; what would contradict the hypothesis.</td></tr>
+<tr><td>Corpus and comparison</td><td>About-page equivalents, duplicate captures, nested clauses, clause complexes, heading/list handling, comparable units and per-page denominators.</td></tr>
+<tr><td>SFL and CDA</td><td>Which concepts and exact categories to code routinely; which to interpret only when analytically relevant; document-level context and legitimation. No schema assumed from earlier discussions.</td></tr>
+<tr><td>Governance</td><td>Affiliation/sector versus formal representation; dated observations and verification thresholds; matching coverage across language and leadership.</td></tr>
+<tr><td>Interface and output</td><td>Final annotation roles, overview measures, table groups, colour and accessible labels, source comparison and human-review workflow; final content and evidence presentation.</td></tr>
+<tr><td>Academic integrity</td><td>Instructor-specific AI agreement and feedback constraints, independent researcher decisions, source permissions, disclosure and the required annotation. Resolve privately before acceptance.</td></tr>
+</tbody>
+</table>
+<p class="small" style="margin-top:12px">Established constraints: five RDMOs; About pages and board composition, not performance indicators; no approved codebook yet; ten human-original anchor pages before machine proposals; full review within final analytical scope; canonical Markdown codebook drives Home, tooltips and Codex.</p>
+</section>
+
+<section id="rules" aria-labelledby="rules-title">
+<h2 id="rules-title">Rules for every session</h2>
+<div class="rule"><h3>One coordinator, one implementation writer</h3><p>The coordinating ChatGPT session owns this progress page and decisions. The designated Codex session owns active workbook and application changes; the researcher alone authorizes analytical choices and publication gates. Before any write, establish current ownership and latest main, protect uncommitted work and reconcile remote commits. Do not rewrite shared history, overwrite the archived branch, silently discard local drafts or have two agents edit the same files. The progress page is independent of the app and data; preserve it in every deployment until explicitly removed.</p></div>
+<div class="rule"><h3>Resume from evidence, not conversational memory</h3><p>A replacement session reads the latest deployed <code>/progress/</code> and its repository source, then confirms main HEAD, last successful Pages run, active Codex ownership, actual workbook/schema and local review/export state. Reopen the revised proposal, course materials and feedback on the m710 when necessary; automated transcripts are not verified quotations. Treat old handoffs and progress entries as historical evidence, not current facts. Do not repeat completed acquisition or change approved decisions without new evidence and researcher authorization.</p></div>
+<div class="rule"><h3>Checkpoint every verified milestone and every handoff</h3><p>Update this page with Pacific timestamp, phase/state, owner, evidence locator (commit, run, checksum or private artifact reference), what actually passed, remaining blocker and precise next action. Record approval commands against the exact version they concern. Keep private handoffs, raw recordings, feedback and sensitive evidence outside the public repository. No claimed completion based solely on an agent's report; verify the artifact and deployment. If a session approaches a limit, stop at a safe boundary and leave the same checkpoint; unexpected interruption triggers a fresh state audit rather than a restart from scratch.</p></div>
+<div class="rule"><h3>Time and scope control</h3><p>Target Nov. 24 for consolidation and the parallel tracks; Nov. 25–26 for accepted codebook, integration and reference coding; Nov. 27–28 for adjudication and governance; Nov. 29 for content, annotation and release QA. These are working targets, not completion claims. Protect researcher coding time and final QA. Prioritize verified anchor comparisons and a defensible bounded corpus over exhaustive archive hunting or new features; agree any scope reduction before changing the final methodology.</p></div>
+<div class="rule"><h3>Commands and authority</h3><p><code>/approved</code> approves this workflow revision and releases the three prompts. <code>/accepted</code> approves the exact current codebook draft for integration after the corpus gate. <code>/project_done</code> authorizes the temporary progress-page removal after final release confirmation. None of these commands is a substitute for reviewing data or satisfying course rules.</p></div>
+</section>
+
+<section id="checkpoint" aria-labelledby="checkpoint-title">
+<h2 id="checkpoint-title">Resume here</h2>
+<div class="snapshot"><h3>Checkpoint 00 &middot; 24 November 2026</h3><p style="margin-top:8px"><strong>State:</strong> Proposed workflow. Earlier research alignment and transcript generation occurred; no new coding structure has been accepted. The other sessions have not been closed or transferred.</p><p><strong>Evidence:</strong> Repository baseline <code>788b497</code>; 37-sheet canonical language workbook (Index + 36 source worksheets); 271 text rows; blank published human-review fields. Revised Project 2 proposal and both local transcripts available in the CMNS 3500 course workspace.</p><p><strong>Next action:</strong> Researcher reviews this page and replies <code>/approved</code> or provides feedback. After approval, coordinator issues the three handoff prompts. Do not initiate the codebook workshop or reset the workbook until ownership has been transferred.</p></div>
+</section>
+<footer>Temporary, unlisted working page. No links to this route are added to the research atlas. The page is publicly reachable; the robots directive is not access control. Only non-sensitive workflow and checkpoint information belongs here.</footer>
+</main>
+</body>
+</html>
