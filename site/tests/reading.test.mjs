@@ -175,7 +175,7 @@ test('same-paragraph clauses remain in one flowing paragraph with keyboard-selec
 });
 
 test('Language exposes Clause analysis and workbook menu entry to coding review',()=>{
-  const c=setup({chooseYear:()=>{}});
+  const c=setup({chooseYear:()=>{},timeline:()=>'<div>timeline</div>'});
   c.state.language.clauses=[
     {id:'VI-H-001',region:'island',year:2002,source:'VI-H',text:'The region attracts tourists.',process:'material'}
   ];
