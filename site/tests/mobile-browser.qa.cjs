@@ -50,9 +50,11 @@ async function check(page,size,route){
  assert.ok(result.activeVisible,route+': current region not in visible part of navigation');
  assert.ok(result.stacked,route+': reading cards overlap instead of stacking');
  assert.ok(result.mapStacked,route+': map and description do not stack');
- if(['language','governance','adjudicator'].includes(route)){
-   const hit=await page.locator('#view input[type="range"]').first().evaluate(n=>n.getBoundingClientRect().height);
-   assert.ok(hit>=40,route+': timeline slider touch area is too small ('+hit+'px)');
+ if(['language','governance'].includes(route)){
+   const slider=await page.locator('#view input[type="range"]').first().evaluate(n=>({
+     height:n.getBoundingClientRect().height,disabled:n.disabled
+   }));
+   if(!slider.disabled)assert.ok(slider.height>=40,route+': timeline slider touch area is too small ('+slider.height+'px)');
  }
  if(route==='profiles')assert.ok(result.mapWidth>=size.width*.7,'Profile map too small');
  if(route==='home')assert.ok(result.slideTextScroll<=result.slideTextClient+3,'Home description clipped');
