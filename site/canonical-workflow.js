@@ -5,7 +5,7 @@
  const originalAnnotations=readingAnnotations, originalRender=render;
  const originalSourceTools=readingSourceTools, originalReadingHeader=readingHeader;
  readingSourceTools=function plainWorkbookTools(mode){return originalSourceTools(mode===true?false:mode);};
- readingHeader=function compactHeader(reviewMode){return originalReadingHeader(reviewMode).replace('Model assisted. Human adjudicated.','Review proposed coding in the browser.');};
+ readingHeader=function sharedLanguageHeader(){return originalReadingHeader(false);};
  const fields=['process_type','actor','affected_participant','agency_voice','modality','institutional_priority','social_actor_representation'];
 
  readingAnnotations=function selectedAnnotations(row){
@@ -206,10 +206,11 @@
      '<textarea id="corrected-text" data-adjudicator-text rows="3">'+
      esc(selected.corrected_text||'')+'</textarea></details></div></div>':
      '<p>No source passages for this period.</p>';
-   const right='<header class="reading-review-head"><h2>Annotations</h2>'+
+   const right='<header class="reading-review-head"><h2>Coding review</h2>'+
      '<div class="reading-review-actions">'+actions+'</div></header>'+
      '<div class="reading-scroll">'+form+'</div>';
    const toolbar='<div class="reading-review-toolbar">'+
+     '<button type="button" class="reading-review-back" data-language-mode="analysis">← Clause analysis</button>'+
      '<button type="button" data-review-prev '+(rows.length?'':'disabled')+
      '>← Previous</button><button type="button" data-review-next '+(rows.length?'':'disabled')+
      '>Next →</button></div>'+

@@ -16,7 +16,7 @@ The [source register](corpus/sources.csv) and [methodology](methodology.md) docu
 
 ## Adjudication: browser → Excel → GitHub
 
-1. Open Adjudicator and inspect source passages. Proposed AI fields remain separate from human-review decisions.
+1. Open **Language → Workbook · GitHub → Open coding review**. The Clause analysis panel switches to an editable Coding review panel; source passages, year and selected clause remain in the same Language page. Proposed AI fields remain separate from human-review decisions.
 2. Approve or reject coding locally, then select Export XLSX. The browser generates RDMO_about_coding_review.xlsx with the original proposals and source text intact plus human-review entries. No private review server is contacted.
 3. Open the exported workbook in Excel. Inspect every correction and review status against the original source. Browser approval alone is not authenticated source verification.
 4. Replace the canonical workbook on GitHub main after manual inspection. GitHub Pages republishes the reviewed file, with changes preserved in Git history.
@@ -29,7 +29,7 @@ The public mini-site no longer has a private researcher connection or approval A
 
 The Home blurbs are Markdown under [site/content/home/](site/content/home/). Profiles and current RDMO website links are edited under [site/content/profiles/](site/content/profiles/). Edit these on main to republish. Profile blurbs remain explicitly labelled editorial placeholders.
 
-The five independent regional organizations appear on Language, Governance and Adjudicator. Vancouver, Coast & Mountains remains hatched on the official geography for context. Language opens in Timeline by default; Tables show source-specific thematic search cues, not human-confirmed findings.
+The five independent regional organizations appear on Language and Governance; coding review is accessed from Language’s workbook menu. Vancouver, Coast & Mountains remains hatched on the official geography for context. Language opens in Timeline by default; Tables show source-specific thematic search cues, not human-confirmed findings.
 
 The [AI disclosure](site/content/ai-disclosure.md) is explicitly labelled placeholder material. It must be replaced with an accurate account before final publication.
 

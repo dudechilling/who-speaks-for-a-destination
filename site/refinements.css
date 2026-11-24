@@ -375,3 +375,39 @@
 @media(prefers-reduced-motion:reduce){
   .slide-panel.slide-enter-next,.slide-panel.slide-enter-prev{animation:none}
 }
+
+/* Clause analysis and coding review are two modes of the Language page. */
+.reading-workbook-menu .reading-mode-action{
+  display:block;
+  width:100%;
+  margin:10px 0 12px;
+  padding:11px 13px;
+  min-height:43px;
+  text-align:left;
+  font:700 13px/1.25 var(--sans);
+  background:#365f43;
+  border:1px solid #31573e;
+  color:#f9fbf2;
+  cursor:pointer;
+}
+.reading-workbook-menu .reading-mode-action:hover,
+.reading-workbook-menu .reading-mode-action:focus-visible{
+  background:#244b37;
+  outline:2px solid #bd775b;
+  outline-offset:2px;
+}
+.reading-review-toolbar .reading-review-back{
+  margin-right:auto;
+  background:transparent;
+  color:#355d48;
+  border:1px solid #a0b6a2;
+  font-weight:700;
+}
+.reading-review-toolbar .reading-review-back:hover,
+.reading-review-toolbar .reading-review-back:focus-visible{
+  background:#dce9dc;
+}
+@media(max-width:820px){
+  .reading-workbook-menu .reading-mode-action{min-height:44px;font-size:14px;}
+  .reading-review-toolbar .reading-review-back{min-height:44px;flex:1 1 100%;}
+}

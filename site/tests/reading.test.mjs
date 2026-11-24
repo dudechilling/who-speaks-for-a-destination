@@ -173,3 +173,17 @@ test('same-paragraph clauses remain in one flowing paragraph with keyboard-selec
   assert.match(js,/clause\.click\(\)/);
   assert.equal(c.readingTabs(),c.tabs());
 });
+
+test('Language exposes Clause analysis and workbook menu entry to coding review',()=>{
+  const c=setup({chooseYear:()=>{}});
+  c.state.language.clauses=[
+    {id:'VI-H-001',region:'island',year:2002,source:'VI-H',text:'The region attracts tourists.',process:'material'}
+  ];
+  const displayed=c.language();
+  assert.match(displayed,/<h2>Clause analysis<\/h2>/);
+  assert.match(displayed,/aria-label="Clause analysis"/);
+  const menu=c.readingSourceTools(false);
+  assert.match(menu,/data-language-mode="review">Open coding review/);
+  c.state.languageMode='review';
+  assert.match(c.readingSourceTools(true),/data-language-mode="analysis">Return to clause analysis/);
+});

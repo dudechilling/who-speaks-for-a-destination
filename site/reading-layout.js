@@ -56,10 +56,12 @@ function readingSourceTools(reviewMode) {
   return '<details class="reading-workbook-details"><summary aria-label="Language workbook settings">Workbook · ' +
     (imported ? 'Imported' : 'GitHub') + '<span class="reading-row-count"> · ' + (data?.rows || 0) + ' rows</span></summary>' +
     '<div class="reading-workbook-menu"><strong title="' + esc(label) + '">' + esc(label) + '</strong>' +
+    '<button type="button" class="reading-action reading-mode-action" data-language-mode="' +
+      (state.languageMode==='review'?'analysis':'review') + '">' +
+      (state.languageMode==='review'?'Return to clause analysis':'Open coding review') + '</button>' +
     '<label for="language-import">Import language XLSX</label><input id="language-import" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">' +
     '<button type="button" class="reading-action" data-restore="language">Restore GitHub workbook</button>' +
     '<p>Imports remain in this browser. Available years and annotations update from the selected file.</p>' +
-    (reviewMode && state.owner ? '<p>Researcher decisions use Alfred’s private workbook, not the public import.</p>' : '') +
     '</div></details>';
 }
 function readingTabs() {
@@ -242,7 +244,7 @@ function readingScaffold(reviewMode, left, right, rows, source, title, selection
       '<section class="reading-card reading-about" aria-label="Source text">' +
         '<header><h2>' + esc(title) + '</h2>'+sourcePicker+'<span>' + esc(selectionLabel) + '</span></header>' +
         '<div class="reading-scroll">' + left + '</div></section>' +
-      '<section class="reading-card reading-annotations" aria-label="Annotations">' + right + '</section>' +
+      '<section class="reading-card reading-annotations" aria-label="' + (reviewMode?'Coding review':'Clause analysis') + '">' + right + '</section>' +
     '</div>' + readingFooter(rows,source,reviewMode) + '</div>';
 }
 function language() {
@@ -252,7 +254,7 @@ function language() {
   const source = result.sources.find(row => row.id === selected?.source) || result.sources[0];
   const name = R.find(pair => pair[0] === state.region)?.[1] || 'Regional organization';
   const left = readingHighlightRows(result.clauses,selected?.id,false);
-  const right = '<header><h2>Annotations</h2><span>' + (selected ? 'Selected passage' : 'Overview') + '</span></header>' +
+  const right = '<header><h2>Clause analysis</h2><span>' + (selected ? 'Selected passage' : 'Overview') + '</span></header>' +
     '<div class="reading-scroll" aria-live="polite">' + readingAnnotations(selected,source) + '</div>';
   return readingScaffold(false,left,right,result.clauses,source,'About us',name + ' · ' + (state.year||'No date'),readingSourcePicker(result.availableSources,source));
 }
@@ -319,7 +321,7 @@ document.addEventListener('click', async event => {
   const promise=render();
   if(typeof matchMedia==='function' && matchMedia('(max-width: 820px)').matches){
     Promise.resolve(promise).then(()=>{
-      if(state.route!=='adjudicator')return;
+      if(state.route!=='language'||state.languageMode!=='review')return;
       const annotation=document.querySelector('.reading-review .reading-annotations');
       if(annotation)annotation.scrollIntoView({block:'start',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
     });

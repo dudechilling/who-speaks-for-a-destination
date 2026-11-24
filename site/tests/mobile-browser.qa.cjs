@@ -9,7 +9,7 @@ const screenshots=path.resolve('mobile-screenshots');
 fs.mkdirSync(screenshots,{recursive:true});
 const selectors={
  home:'.carousel-wrap',profiles:'.profile-body',language:'.reading-language',
- governance:'.governance-layout',adjudicator:'.reading-review',
+ governance:'.governance-layout',
  corpus:'.corpus-area','ai-disclosure':'.ai-disclosure-content'
 };
 const sizes=[{width:320,height:700},{width:390,height:844},{width:768,height:1024}];
@@ -65,6 +65,32 @@ async function check(page,size,route){
    const ctx=await browser.newContext({viewport:size,deviceScaleFactor:1,isMobile:true,hasTouch:true});
    const page=await ctx.newPage();
    for(const route of Object.keys(selectors))await check(page,size,route);
+   // Workbook menu is the sole entry into coding review; no sixth main dock item.
+   await page.goto(base+'/#language');
+   await page.locator('.reading-language .reading-annotations h2').waitFor();
+   assert.equal((await page.locator('.reading-language .reading-annotations h2').textContent()).trim(),'Clause analysis');
+   const dockRoutes=await page.locator('#dock a').evaluateAll(nodes=>nodes.map(node=>node.dataset.route));
+   assert.deepEqual(dockRoutes,['profiles','language','governance','corpus','home']);
+   await page.locator('.reading-workbook-details summary').click();
+   await page.locator('[data-language-mode="review"]').click();
+   await page.locator('.reading-review .reading-review-head h2').waitFor();
+   assert.equal((await page.locator('.reading-review .reading-review-head h2').textContent()).trim(),'Coding review');
+   assert.ok((await page.locator('.reading-heading h1').textContent()).includes('The language'));
+   assert.equal(await page.locator('#dock a[data-route="language"]').getAttribute('aria-current'),'page');
+   await page.locator('#code-actor').fill('Reviewed example actor');
+   await page.locator('.reading-review-back[data-language-mode="analysis"]').click();
+   await page.locator('.reading-language .reading-annotations h2').waitFor();
+   assert.equal((await page.locator('.reading-language .reading-annotations h2').textContent()).trim(),'Clause analysis');
+   await page.locator('.reading-workbook-details summary').click();
+   await page.locator('[data-language-mode="review"]').click();
+   await page.locator('#code-actor').waitFor();
+   assert.equal(await page.locator('#code-actor').inputValue(),'Reviewed example actor');
+   await page.screenshot({path:path.join(screenshots,size.width+'-language-review.png')});
+   // Historical links still open the integrated review mode.
+   await page.goto(base+'/#adjudicator');
+   await page.locator('.reading-review').waitFor();
+   assert.equal(new URL(page.url()).hash,'#language');
+   assert.equal(await page.locator('#dock a[data-route="language"]').getAttribute('aria-current'),'page');
    await page.goto(base+'/#home');
    await page.locator('[data-slide="2"]').click();
    await page.locator('.slide-panel.researcher').waitFor();
