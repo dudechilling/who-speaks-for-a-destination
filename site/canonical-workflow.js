@@ -4,7 +4,13 @@
  const originalProfiles=profiles, originalGovernance=governance;
  const originalAnnotations=readingAnnotations, originalRender=render;
  const originalSourceTools=readingSourceTools, originalReadingHeader=readingHeader;
- readingSourceTools=function plainWorkbookTools(mode){return originalSourceTools(mode===true?false:mode);};
+ readingSourceTools=function plainWorkbookTools(mode){
+   const tools=originalSourceTools(mode===true?false:mode);
+   if(mode===true)return tools;
+   return tools.replace('<p>Imports remain in this browser.',
+     '<button type="button" class="reading-action" data-source-review>Review source text</button>'+
+     '<p>Imports remain in this browser.');
+ };
  readingHeader=function sharedLanguageHeader(){return originalReadingHeader(false);};
  const fields=['process_type','actor','affected_participant','agency_voice','modality','institutional_priority','social_actor_representation'];
 
@@ -68,7 +74,7 @@
  readingFooter=function compactCitation(rows,source,reviewMode){
    const name=R.find(x=>x[0]===state.region)?.[1]||'Regional organization';
    const url=safeUrl(source?.url||source?.source_url),date=source?.date||source?.capture_date;
-   const label='Source: '+name+(date?' · '+readingDateLabel(date):'');
+   const label='View original source'+(date?' · capture '+readingDateLabel(date):'');
    return '<div class="reading-footnotes">'+(url?
      '<a class="reading-source-citation" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+
      esc(label)+' ↗</a>':esc(label))+'</div>';
@@ -108,8 +114,13 @@
      const entry=state.visitor.overrides[row.row_id];
      if(!entry||entry.fingerprint!==row.fingerprint)return row;
      const values=entry.values||{};
-     return {...row,...values,draft:{...row.draft,
+     const merged={...row,...values,draft:{...row.draft,
        ...Object.fromEntries(fields.filter(f=>Object.hasOwn(values,f)).map(f=>[f,values[f]]))}};
+     if(Object.hasOwn(values,'corrected_text')&&values.corrected_text){
+       merged.verbatim_text=values.corrected_text;
+       merged.text=values.corrected_text;
+     }
+     return merged;
    });
  };
  rowStatus=function humanReviewStatus(r){
@@ -157,7 +168,26 @@
          setSheetCell(sheet,r,cols.human_corrected_clause,data.corrected_text);
        if(Object.hasOwn(data,'reviewed_at_utc'))
          setSheetCell(sheet,r,cols.human_reviewed_at_utc,data.reviewed_at_utc);
+       if(Object.hasOwn(data,'heading_before')&&Number.isInteger(cols.heading_before))
+         setSheetCell(sheet,r,cols.heading_before,data.heading_before);
+       if(Object.hasOwn(data,'paragraph_id')&&Number.isInteger(cols.paragraph_id))
+         setSheetCell(sheet,r,cols.paragraph_id,data.paragraph_id);
+       if(Object.hasOwn(data,'source_order')&&Number.isInteger(cols.source_order))
+         setSheetCell(sheet,r,cols.source_order,data.source_order);
        changed++;
+     }
+   }
+   const index=wb.Sheets.Index;
+   if(index){
+     const raw=XLSX.utils.sheet_to_json(index,{header:1,defval:''}),h=raw.findIndex(row=>row[0]==='source_id');
+     if(h>=0){
+       const cols=Object.fromEntries(raw[h].map((s,i)=>[String(s),i]));
+       for(let r=h+1;r<raw.length;r++){
+         const source=String(raw[r][cols.source_id]||'');
+         const local=currentRows().find(row=>row.about_id===source&&row.source_review_status);
+         if(local&&Number.isInteger(cols.source_verification_status))
+           setSheetCell(index,r,cols.source_verification_status,local.source_review_status);
+       }
      }
    }
    return {wb,changed};
@@ -179,7 +209,39 @@
  exportWorkspace=exportCanonical;
 
 
+ function sourceReviewer(){
+   readingEnsureReviewYear();
+   const rows=readingReviewRows();
+   const selected=rows.find(r=>r.row_id===state.selected)||rows[0]||null;
+   if(selected&&selected.row_id!==state.selected)state.selected=selected.row_id;
+   const source=(state.language?.docs||[]).find(d=>d.id===selected?.about_id);
+   const original=workbookRows().find(r=>r.row_id===selected?.row_id)?.verbatim_text||'';
+   const left=readingHighlightRows(rows,selected?.row_id,true);
+   const url=safeUrl(source?.url||selected?.source_url||'');
+   const fieldsHtml=selected?'<div class="reading-review-form">'+
+     '<p class="micro">Recovered text is retained below. Your correction is used in coding and is exported separately.</p>'+
+     '<div class="field"><label>Recovered text</label><blockquote>'+esc(original)+'</blockquote></div>'+
+     '<div class="field"><label for="source-corrected-text">Corrected text</label><textarea id="source-corrected-text" data-source-field="corrected_text" rows="5">'+esc(selected.corrected_text||'')+'</textarea></div>'+
+     '<div class="field"><label for="source-heading">Heading before this block</label><input id="source-heading" data-source-field="heading_before" value="'+esc(selected.heading_before||'')+'"></div>'+
+     '<div class="field"><label for="source-paragraph">Paragraph identifier</label><input id="source-paragraph" data-source-field="paragraph_id" value="'+esc(selected.paragraph_id||'')+'"></div>'+
+     '<div class="field"><label for="source-order">Source order</label><input id="source-order" data-source-field="source_order" inputmode="numeric" value="'+esc(String(selected.source_order||''))+'"></div>'+
+     '<div class="field"><label for="source-note">Source-review note</label><textarea id="source-note" data-source-field="annotations" rows="3">'+esc(selected.annotations||'')+'</textarea></div>'+
+     '</div>':'<p>No source text is available for this period.</p>';
+   const actions='<button type="button" data-mark-source-reviewed '+(selected?'':'disabled')+'>Mark source reviewed</button>'+
+     '<button type="button" class="reading-export" data-export-xlsx>Export XLSX</button>';
+   const right='<header class="reading-review-head"><h2>Review source text</h2><div class="reading-review-actions">'+actions+'</div></header>'+
+     '<div class="reading-scroll">'+fieldsHtml+'</div>';
+   const toolbar='<div class="reading-review-toolbar"><button type="button" data-open-coding-review>Open coding review</button>'+
+     '<button type="button" data-language-mode="analysis">← Clause analysis</button>'+
+     '<button type="button" data-review-prev '+(rows.length?'':'disabled')+'>← Previous</button><button type="button" data-review-next '+(rows.length?'':'disabled')+'>Next →</button></div>'+
+     (state.adjudicatorNotice?'<p class="reading-review-notice" role="status">'+esc(state.adjudicatorNotice)+'</p>':'');
+   const org=R.find(x=>x[0]===state.region)?.[1]||'Regional organization';
+   const result=readingScaffold(true,left,right,rows,source||null,'About us',org+' · capture '+(source?.capture_timestamp||source?.date||'not recorded'));
+   return result.replace('<div class="reading-panels">',toolbar+'<div class="reading-panels">')+
+     (url?'<p class="reading-review-source"><a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">View original source ↗</a></p>':'');
+ }
  adjudicator=function simplifiedAdjudicator(){
+   if(state.sourceReview)return sourceReviewer();
    readingEnsureReviewYear();
    const rows=readingReviewRows();
    const selected=rows.find(r=>r.row_id===state.selected)||rows[0]||null;
@@ -260,6 +322,30 @@
      '<article class="ai-disclosure-content prose">'+
      md(await getText('content/ai-disclosure.md'))+'</article>';
  };
+ document.addEventListener('click',async event=>{
+   const target=event.target.closest?.('[data-source-review],[data-open-coding-review],[data-mark-source-reviewed]');
+   if(!target)return;
+   event.preventDefault();event.stopImmediatePropagation();
+   if(target.hasAttribute('data-source-review')){
+     state.languageMode='review';state.sourceReview=true;state.adjudicatorNotice='Source corrections are saved locally in this browser until you export the complete workbook.';
+   }else if(target.hasAttribute('data-open-coding-review')){
+     state.languageMode='review';state.sourceReview=false;state.adjudicatorNotice='';
+   }else{
+     const selected=currentRow();
+     if(!selected)return;
+     for(const row of currentRows().filter(row=>row.about_id===selected.about_id))
+       putVisitor(row,{source_review_status:'Source reviewed, not coded'});
+     state.adjudicatorNotice='Source-review decision saved locally. Export the complete workbook to retain it.';
+   }
+   await render();
+ },true);
+ document.addEventListener('input',event=>{
+   const field=event.target.dataset?.sourceField;
+   if(!field||state.owner)return;
+   const row=currentRow();if(!row)return;
+   putVisitor(row,{[field]:event.target.value});
+   state.adjudicatorNotice='Source correction saved locally. Export the complete workbook to retain it.';
+ },true);
  document.addEventListener('click',event=>{
    if(event.target.closest('[data-export-csv]')&&state.route==='corpus'){
      event.preventDefault();event.stopImmediatePropagation();

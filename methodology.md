@@ -14,7 +14,7 @@ The original October proposal described three linked datasets on language, gover
 
 ## Sources and preservation
 
-The exact URLs, capture or retrieval dates, and SHA-256 values are in `corpus/sources.csv` and the workbook Index. All ten requested pages were retrieved on 2026-11-09. Historical captures are identified by their Internet Archive Memento timestamps. Publication dates are recorded only where independently established; none was established for these pages.
+The exact URLs, capture or retrieval dates, and SHA-256 values are in `corpus/sources.csv` and the workbook Index. Ten anchor pages were retrieved on 2026-11-09. A first longitudinal intake adds 26 readable, attributable candidate captures with their exact archive URLs and capture timestamps. Historical captures are identified by their Internet Archive Memento timestamps. Publication dates are recorded only where independently established; none was established for these pages.
 
 Complete originals are private research copies. The public repository does not include them. The workbook Index records included and excluded source sections, material limitations, and identity/continuity cautions for every page.
 
@@ -46,7 +46,7 @@ Human decisions are separate: human_review_status, human_process_type, human_act
 
 ## Publication and fair-dealing assessment
 
-The public [coded corpus](RDMO_about_coding_review.xlsx) reproduces **3,130 words of original wording** in 194 clause rows across ten public-facing organizational pages (95–656 words per page in the selected analytical text). The corresponding normalized clauses repeat the linguistic content in a comparable form. The workbook contains no full HTML pages, site images, navigational material or advertising. Source identifiers, retrieval dates and original URLs appear in its Index and [corpus/sources.csv](corpus/sources.csv).
+The public [coded corpus](RDMO_about_coding_review.xlsx) reproduces **3,130 words of anchor-source wording** in 194 clause rows across ten public-facing organizational pages (95–656 words per page in the selected analytical text). It also provides bounded recoverable excerpts for 26 longitudinal captures, each labelled `Awaiting researcher review`; these are source-review material, not complete pages or coded findings. The workbook contains no full HTML pages, site images, navigational material or advertising. Source identifiers, capture timestamps and original URLs appear in its Index and [corpus/sources.csv](corpus/sources.csv).
 
 **Basis asserted:** Section 29 of Canada's [Copyright Act](https://laws-lois.justice.gc.ca/eng/acts/C-42/section-29.html) recognizes fair dealing for research and education. The Supreme Court of Canada's *CCH Canadian Ltd. v. Law Society of Upper Canada* framework requires a context-dependent assessment, not a fixed word limit. The six factors, applied here, are:
 

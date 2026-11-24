@@ -53,7 +53,9 @@ test('one canonical workbook round-trips an adjudication without rewriting AI pr
  assert.equal(selected.status,'pending');
  const human={status:'approved',actor:'Human-reviewed participant',
   process_type:'relational',reviewed_at_utc:'2026-11-16T02:00:00.000Z',
-  annotations:'Manually verified in context'};
+  annotations:'Manually verified in context',corrected_text:'Corrected researcher text.',
+  heading_before:'Source heading',paragraph_id:'P7',source_order:'7',
+  source_review_status:'Source reviewed, not coded'};
  c.state.visitor.overrides[selected.row_id]={fingerprint:selected.fingerprint,values:human};
  const {wb,changed}=c.window.CanonicalWorkbook.reviewedWorkbook();
  assert.equal(changed,1);
@@ -66,8 +68,18 @@ test('one canonical workbook round-trips an adjudication without rewriting AI pr
  assert.equal(tab.human_review_status,'approved');
  assert.equal(tab.human_review_note,'Manually verified in context');
  assert.equal(tab.human_reviewed_at_utc,human.reviewed_at_utc);
+ assert.equal(tab.human_corrected_clause,human.corrected_text);
+ assert.equal(tab.heading_before,human.heading_before);
+ assert.equal(tab.paragraph_id,human.paragraph_id);
+ assert.equal(String(tab.source_order),'7');
+ const indexRows=c.XLSX.utils.sheet_to_json(c.XLSX.read(exported,{type:'array'}).Sheets.Index,{header:1,defval:''});
+ const indexHeader=indexRows[1],sourceColumn=indexHeader.indexOf('source_id');
+ const statusColumn=indexHeader.indexOf('source_verification_status');
+ const index=indexRows.find((r,i)=>i>1&&r[sourceColumn]==='VI-H');
+ assert.equal(index[statusColumn],human.source_review_status);
  const again=c.parseLanguage(exported,'reimport.xlsx');
  assert.ok(again.rows>=194);
  assert.equal(again.clauses.find(r=>r.id==='VI-H-001').human_actor,'Human-reviewed participant');
  assert.equal(again.clauses.find(r=>r.id==='VI-H-001').human_review_status,'approved');
+ assert.equal(again.clauses.find(r=>r.id==='VI-H-001').human_corrected_clause,human.corrected_text);
 });
