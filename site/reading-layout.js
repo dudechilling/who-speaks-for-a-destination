@@ -104,7 +104,7 @@ function readingHighlightRows(rows, selectedId, reviewMode) {
     const field=reviewMode?'data-review-row':'data-excerpt';
     const category=readingProcessKey(reviewMode?(item.draft?.process_type||item.original?.process_type||''):item.process);
     const visible=String(content).trim();
-    if(!reviewMode&&item.source_only)return esc(visible);
+    if(!reviewMode&&item.source_only)return window.ClauseCoding?.blockMarkup(item,visible)||esc(visible);
     const full=String(reviewMode?(item.verbatim_text||item.text||''):item.text||'').trim();
     return '<span role="button" tabindex="0" class="reading-highlight reading-highlight--'+category+'" '+
       field+'="'+esc(id)+'" aria-pressed="'+(id===selectedId)+'" aria-label="'+esc(full)+'" title="'+esc(READING_PROCESS_NAMES[category])+'">'+esc(visible)+'</span>';

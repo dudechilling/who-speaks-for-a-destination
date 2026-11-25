@@ -82,7 +82,7 @@ jobs:
           book.close()
           PYCODE
           cmp RDMO_about_coding_review.xlsx site/data/language.xlsx
-          for file in site/app.js site/reading-layout.js site/language-table.js site/refinements.js site/canonical-workflow.js; do node --check "$file"; done
+          for file in site/app.js site/reading-layout.js site/language-table.js site/refinements.js site/canonical-workflow.js site/clause-coding.js; do node --check "$file"; done
           node --test site/tests/*.mjs
           if grep -R -qi --exclude='ai-disclosure.md' 'lorem ipsum' site/content; then echo 'Unexpected placeholder found'; exit 1; fi
           grep -qi 'Editorial placeholder' site/content/ai-disclosure.md

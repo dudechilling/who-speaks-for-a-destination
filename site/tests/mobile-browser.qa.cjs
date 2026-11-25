@@ -86,15 +86,11 @@ async function check(page,size,route){
    assert.equal(await page.locator('#source-note').inputValue(),'Test-only source review note');
    await page.screenshot({path:path.join(screenshots,size.width+'-source-review.png')});
    await page.goto(base+'/#home');
+   await page.locator('.slide-tab').first().waitFor();
+   assert.equal(await page.locator('.slide-tab').count(),3);
+   const orientation=await page.locator('.slide-tab-label').evaluateAll(nodes=>nodes.map(node=>getComputedStyle(node).writingMode));
+   assert.ok(orientation.length===3&&orientation.every(mode=>mode==='horizontal-tb'));
    await page.locator('[data-slide="2"]').click();
-   await page.locator('.slide-panel.researcher').waitFor();
-   const orientation=await page.locator('.slide-tab-label').evaluateAll(nodes=>
-     nodes.map(node=>getComputedStyle(node).writingMode));
-   assert.ok(orientation.length===4&&orientation.every(mode=>mode==='horizontal-tb'),
-     'Home carousel tabs must use horizontal readable labels on mobile');
-   const researcher=await page.locator('.slide-panel.researcher .slide-text').evaluate(n=>[n.clientHeight,n.scrollHeight]);
-   assert.ok(researcher[1]<=researcher[0]+3,'Researcher description clipped at '+size.width+'px');
-   await page.locator('[data-slide="3"]').click();
    await page.locator('.slide-panel.codebook table').first().waitFor();
    assert.equal(await page.locator('.slide-panel.codebook table').count(),8);
    await page.locator('.slide-panel.codebook table').last().scrollIntoViewIfNeeded();
@@ -103,7 +99,7 @@ async function check(page,size,route){
    await page.locator('[data-next-slide]').click();
    await page.locator('[data-slide="0"][aria-pressed="true"]').waitFor();
    await page.locator('[data-prev-slide]').click();
-   await page.locator('[data-slide="3"][aria-pressed="true"]').waitFor();
+   await page.locator('[data-slide="2"][aria-pressed="true"]').waitFor();
    if(size.width===390){
      await page.goto(base+'/#language');
      assert.equal(await page.locator('.reading-language [data-excerpt]').count(),0);

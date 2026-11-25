@@ -199,6 +199,7 @@
  async function exportCanonical(){
    try{
      const {wb,changed}=reviewedWorkbook();
+      window.ClauseCoding?.writeToWorkbook(wb);
      const bytes=XLSX.write(wb,{type:'array',bookType:'xlsx',cellStyles:true,compression:true});
      download('RDMO_about_coding_review.xlsx',bytes,
        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -206,6 +207,8 @@
        ' edited rows). Inspect it in Excel before replacing the GitHub workbook.';
    }catch(error){
      state.adjudicatorNotice='Excel export failed: '+String(error.message||error);
+      window.ClauseCoding?.reportError(state.adjudicatorNotice);
+      alert(state.adjudicatorNotice);
    }
    await render();
  }
@@ -379,7 +382,12 @@
    await originalRender();
    const view=document.querySelector('#view');
    const meta=view?.querySelector('.corner-meta');
-   if(meta)meta.textContent='Thompson Rivers University | CMNS 3500 | Fall 2026 · Earl Healy';
+   if(view){
+     const masthead=meta||document.createElement('div');
+     masthead.className='corner-meta';
+     masthead.textContent='Thompson Rivers University | CMNS 3500 | Fall 2026 · Earl Healy';
+     view.prepend(masthead);
+   }
    if(view&&shouldReset)view.scrollTop=0;
    if(typeof matchMedia==='function'&&matchMedia('(max-width: 820px)').matches){
      const strip=view?.querySelector('.rdmo-tabs');

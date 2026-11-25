@@ -45,12 +45,12 @@ function fixture() {
   vm.runInContext(source,context);
   return context;
 }
-test('Home blurb Markdown points to the three independent editable files',()=>{
+test('Home tabs point to Project, RDMOs and the canonical Codebook',()=>{
   const c=fixture();
   const app=fs.readFileSync(new URL('../app.js',import.meta.url),'utf8');
   assert.match(app,/md:'home\/project\.md'/);
   assert.match(app,/md:'home\/rdmos\.md'/);
-  assert.match(app,/md:'home\/researcher\.md'/);
+  assert.doesNotMatch(app,/md:'home\/researcher\.md'/);assert.match(app,/md:'home\/codebook\.md'/);
   const markup=c.md('A [source](https://example.org/a) and <script>alert(1)</script>');
   assert.match(markup,/href="https:\/\/example.org\/a"/);
   assert.match(markup,/&lt;script&gt;/);

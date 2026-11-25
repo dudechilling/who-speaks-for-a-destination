@@ -41,6 +41,7 @@ jobs:
           done
           curl -fsS http://127.0.0.1:8844/ >/dev/null
           node site/tests/mobile-browser.qa.cjs
+          MOBILE_QA_BASE=http://127.0.0.1:8844 node site/tests/manual-coding.qa.cjs
       - name: Keep browser screenshots
         if: always()
         uses: actions/upload-artifact@v4
