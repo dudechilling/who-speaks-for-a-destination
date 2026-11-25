@@ -75,11 +75,23 @@
   md=function renderEditableMarkdown(source){
     let out='',buffer=[];
     const flush=()=>{if(buffer.length){out+='<p>'+inlineMarkdown(buffer.join(' '))+'</p>';buffer=[]}};
-    for(const line of String(source||'').replace(/\r/g,'').split('\n')){
-      const text=line.trim(),heading=text.match(/^(#{1,3})\s+(.+)$/);
-      if(!text)flush();
-      else if(heading){flush();const tag='h'+heading[1].length;out+='<'+tag+'>'+inlineMarkdown(heading[2])+'</'+tag+'>';}
-      else buffer.push(text);
+    const lines=String(source||'').replace(/\r/g,'').replace(/^---\n[\s\S]*?\n---\n/,'').split('\n');
+    const cells=line=>line.trim().replace(/^\||\|$/g,'').split('|').map(x=>x.trim());
+    const cell=x=>x.charCodeAt(0)===96&&x.charCodeAt(x.length-1)===96?'<code>'+esc(x.slice(1,-1))+'</code>':inlineMarkdown(x);
+    for(let i=0;i<lines.length;i++){
+      const text=lines[i].trim(), heading=text.match(/^(#{1,3})\s+(.+)$/);
+      if(!text){flush();continue;}
+      if(heading){flush();const tag='h'+heading[1].length;out+='<'+tag+'>'+inlineMarkdown(heading[2])+'</'+tag+'>';continue;}
+      if(text.startsWith('|')&&lines[i+1]?.trim().startsWith('|')&&cells(lines[i+1]).every(c=>/^:?-{3,}:?$/.test(c))){
+        flush();const header=cells(text);i++;
+        out+='<div class="codebook-table-wrap"><table><thead><tr>'+header.map(c=>'<th scope="col">'+cell(c)+'</th>').join('')+'</tr></thead><tbody>';
+        while(i+1<lines.length&&lines[i+1].trim().startsWith('|')){
+          const row=cells(lines[++i]);out+='<tr>'+header.map((_,j)=>'<td>'+cell(row[j]||'')+'</td>').join('')+'</tr>';
+        }
+        out+='</tbody></table></div>';continue;
+      }
+      if(/^\*[^*]+\*$/.test(text)){flush();out+='<p><em>'+inlineMarkdown(text.slice(1,-1))+'</em></p>';continue;}
+      buffer.push(text);
     }
     flush();return out;
   };
@@ -207,41 +219,26 @@
     return '<section class="lm-mini-metric"><h3>'+esc(title)+definitionButton(help)+'</h3>'+bars+'</section>';
   }
   function compactOverview(){
-    const rows=readingRecords(state.region,state.year).clauses.filter(r=>!['heading','caption','footer','button'].includes(r.type));
-    const affected=topCategories(rows,'affected_participant',3);
-    return '<div class="lm-annotation-overview"><p class="lm-overview-lede">Proposed linguistic codes and source-text search cues. Select a passage for details.</p>'+
-      '<div class="lm-mini-grid">'+
-      miniBreakdown('Processes',topCategories(rows,'process',4),'No process proposals','process')+
-      miniBreakdown('Actors',topCategories(rows,'actor',3),'No named actors','actor')+
-      (affected.length?miniBreakdown('Affected participants',affected,'No separately coded participants','affected_participant'):'')+
-      miniBreakdown('Named groups · search cues',cueCategories(rows,'beneficiaries'),'No matching group terms','named_groups')+
-      miniBreakdown('Priorities · search cues',cueCategories(rows,'priorities'),'No matching priority terms','priorities')+
-      '</div><p class="lm-overview-caveat">Search cues are not confirmed beneficiaries, affected participants or research findings.</p></div>';
+    return '<p class="lm-empty">Not coded yet. Clause analysis will appear after researcher coding.</p>';
   }
   readingAnnotations=function readingAnnotationsWithoutSourceLink(selected){
-    if(!selected)return compactOverview();
-    const fields=[
-      ['SFL process',READING_PROCESS_NAMES[readingProcessKey(selected.process)],'process_type'],
-      ['Actor / primary participant',selected.actor,'actor'],
-      ['Affected participant',selected.affected_participant,'affected_participant'],
-      ['Agency / voice',/^(?:active|passive|non_finite)$/i.test(String(selected.agency||'').trim())?selected.agency:'','agency_voice'],
-      ['Modality',selected.modality,'modality'],
-      ['Institutional priority',selected.institutional_priority,'institutional_priority'],
-      ['Social actor representation',selected.social_actor_representation,'social_actor_representation'],
-      ['Coding annotation',selected.annotations,'annotations']
-    ].filter(item=>coded(item[1]));
-    const rowHtml=fields.map(([name,val,key])=>
-      '<div class="reading-annotation-item"><dt>'+esc(name)+definitionButton(key)+'</dt><dd>'+esc(val)+'</dd></div>').join('');
-    const cues=cueCategories([selected],'beneficiaries');
-    const cueHtml=cues.length?'<div class="reading-annotation-item"><dt>Named groups · search cues'+definitionButton('named_groups')+'</dt><dd class="lm-clause-cues">'+
-      cues.map(([name,,tone])=>'<span class="lm-cue-chip"><i class="theme-tone-'+toneNames[tone]+'" aria-hidden="true"></i>'+esc(name)+'</span>').join('')+
-      '</dd></div>':'';
-    return '<div class="reading-annotation-content"><dl>'+rowHtml+cueHtml+'</dl></div>';
+    return compactOverview();
   };
 
   function tableView(){
     const matrix=window.LanguageMatrix;
     if(!state.language||!matrix)return originalLanguage();
+    if(state.language.clauses.some(r=>r.source_only)){
+      const years=regionSourceYears();
+      const switches='<div class="lm-view-switch" role="group" aria-label="Language display"><button type="button" data-language-view="timeline" aria-pressed="false">Timeline</button><button type="button" data-language-view="table" aria-pressed="true">Tables</button></div>';
+      const head=years.map(y=>'<th scope="col">'+y+'</th>').join('');
+      const pending=years.map(()=>'<td>Pending coding</td>').join('');
+      return '<div class="reading-design lm-table-view lm-clean-table">'+readingHeader(false)+readingTabs()+
+        '<div class="lm-mode-row">'+switches+'</div><section class="lm-surface"><header class="lm-surface-head"><h2>Language comparison</h2></header>'+
+        '<div class="lm-surface-body"><p class="lm-empty">Not coded yet. Frequency tables will appear after coding.</p>'+
+        '<div class="lm-table-scroll"><table class="lm-table lm-table--regional"><thead><tr><th scope="col">Source status</th>'+head+'</tr></thead>'+
+        '<tbody><tr><th scope="row">Analysis</th>'+pending+'</tr></tbody></table></div></div></section></div>';
+    }
     const ui=matrix.ui,org=R.find(([id])=>id===state.region)?.[1]||'Regional organization';
     const years=[...new Set(matrix.availableDocs().map(d=>d.year))].sort((a,b)=>a-b);
     const themes=matrix.themes[ui.dimension]||matrix.themes.beneficiaries;

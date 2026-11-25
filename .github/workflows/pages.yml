@@ -54,14 +54,31 @@ jobs:
           index=list(book['Index'].values)
           header=index[1]
           assert {'source_id','worksheet','capture_timestamp','source_verification_status','source_text_sha256'}.issubset(header)
-          assert len(index)-2 >= 36
+          inventory=list(book['Source Inventory'].values)
+          ih=list(inventory[1])
+          inventory_rows=[dict(zip(ih,row)) for row in inventory[2:]]
+          active={r['source_id'] for r in inventory_rows if str(r['active_workbook_status']).startswith('Active source text')}
+          index_rows=[dict(zip(header,row)) for row in index[2:]]
+          assert len(index_rows)==len(active) and {r['source_id'] for r in index_rows}==active
+          assert len({(r['region'],str(r['capture_timestamp'])[:4]) for r in index_rows})==len(index_rows)
+          import hashlib
+          ids={r['worksheet']:r for r in index_rows}
+          code_fields=['process_type','process','participants','voice','institutional_priority','represented_beneficiary','coding_provenance']
           total=0
           required={'block_id','source_id','source_order','block_kind','paragraph_id','original_text','corrected_text','source_review_status','process_type','process','participants','voice','institutional_priority','represented_beneficiary'}
           for sheet in [book[name] for name in book.sheetnames if name.startswith('SRC_')]:
-              columns={cell.value for cell in next(sheet.rows)}
-              assert required.issubset(columns),sheet.title
-              total+=sheet.max_row-1
-          assert total>=271,total
+              values=list(sheet.values)
+              columns=values[0]
+              assert required.issubset(set(columns)),sheet.title
+              records=[dict(zip(columns,row)) for row in values[1:]]
+              assert sheet.title in ids and records
+              assert all(r['source_id']==ids[sheet.title]['source_id'] for r in records)
+              assert [r['source_order'] for r in records]==list(range(1,len(records)+1))
+              assert all(r['original_text'] and '\ufffd' not in r['original_text'] for r in records)
+              assert all(r[field] in (None,'') for r in records for field in code_fields)
+              assert hashlib.sha256('\n'.join(r['original_text'] for r in records).encode()).hexdigest()==ids[sheet.title]['source_text_sha256']
+              total+=len(records)
+          assert total>0 and len([n for n in book.sheetnames if n.startswith('SRC_')])==len(index_rows)
           book.close()
           PYCODE
           cmp RDMO_about_coding_review.xlsx site/data/language.xlsx

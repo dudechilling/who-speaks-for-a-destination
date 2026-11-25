@@ -67,54 +67,49 @@ async function check(page,size,route){
    const ctx=await browser.newContext({viewport:size,deviceScaleFactor:1,isMobile:true,hasTouch:true});
    const page=await ctx.newPage();
    for(const route of Object.keys(selectors))await check(page,size,route);
-   // Workbook menu is the sole entry into coding review; no sixth main dock item.
+   // Source-only workbook review is enabled, not clause coding.
    await page.goto(base+'/#language');
    await page.locator('.reading-language .reading-annotations h2').waitFor();
-   assert.equal((await page.locator('.reading-language .reading-annotations h2').textContent()).trim(),'Clause analysis');
+   assert.match(await page.locator('.reading-annotations').innerText(),/Not coded yet/);
    const dockRoutes=await page.locator('#dock a').evaluateAll(nodes=>nodes.map(node=>node.dataset.route));
    assert.deepEqual(dockRoutes,['profiles','language','governance','corpus','home']);
    await page.locator('.reading-workbook-details summary').click();
-   await page.locator('[data-language-mode="review"]').click();
-   await page.locator('.reading-review .reading-review-head h2').waitFor();
-   assert.equal((await page.locator('.reading-review .reading-review-head h2').textContent()).trim(),'Coding review');
-   assert.ok((await page.locator('.reading-heading h1').textContent()).includes('The language'));
-   assert.equal(await page.locator('#dock a[data-route="language"]').getAttribute('aria-current'),'page');
-   await page.locator('#code-actor').fill('Reviewed example actor');
-   await page.locator('.reading-review-back[data-language-mode="analysis"]').click();
+   await page.locator('[data-source-review]').click();
+   await page.getByRole('heading',{name:'Review source text'}).waitFor();
+   assert.equal(await page.locator('[data-code]').count(),0);
+   await page.locator('#source-note').fill('Test-only source review note');
+   await page.locator('[data-language-mode="analysis"]').click();
    await page.locator('.reading-language .reading-annotations h2').waitFor();
-   assert.equal((await page.locator('.reading-language .reading-annotations h2').textContent()).trim(),'Clause analysis');
    await page.locator('.reading-workbook-details summary').click();
-   await page.locator('[data-language-mode="review"]').click();
-   await page.locator('#code-actor').waitFor();
-   assert.equal(await page.locator('#code-actor').inputValue(),'Reviewed example actor');
-   await page.screenshot({path:path.join(screenshots,size.width+'-language-review.png')});
-   // Historical links still open the integrated review mode.
-   await page.goto(base+'/#adjudicator');
-   await page.locator('.reading-review').waitFor();
-   assert.equal(new URL(page.url()).hash,'#language');
-   assert.equal(await page.locator('#dock a[data-route="language"]').getAttribute('aria-current'),'page');
+   await page.locator('[data-source-review]').click();
+   await page.locator('#source-note').waitFor();
+   assert.equal(await page.locator('#source-note').inputValue(),'Test-only source review note');
+   await page.screenshot({path:path.join(screenshots,size.width+'-source-review.png')});
    await page.goto(base+'/#home');
    await page.locator('[data-slide="2"]').click();
    await page.locator('.slide-panel.researcher').waitFor();
    const orientation=await page.locator('.slide-tab-label').evaluateAll(nodes=>
      nodes.map(node=>getComputedStyle(node).writingMode));
-   assert.ok(orientation.length===3&&orientation.every(mode=>mode==='horizontal-tb'),
+   assert.ok(orientation.length===4&&orientation.every(mode=>mode==='horizontal-tb'),
      'Home carousel tabs must use horizontal readable labels on mobile');
    const researcher=await page.locator('.slide-panel.researcher .slide-text').evaluate(n=>[n.clientHeight,n.scrollHeight]);
    assert.ok(researcher[1]<=researcher[0]+3,'Researcher description clipped at '+size.width+'px');
+   await page.locator('[data-slide="3"]').click();
+   await page.locator('.slide-panel.codebook table').first().waitFor();
+   assert.equal(await page.locator('.slide-panel.codebook table').count(),8);
+   await page.locator('.slide-panel.codebook table').last().scrollIntoViewIfNeeded();
+   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth),size.width);
+   await page.screenshot({path:path.join(screenshots,size.width+'-codebook.png')});
+   await page.locator('[data-next-slide]').click();
+   await page.locator('[data-slide="0"][aria-pressed="true"]').waitFor();
+   await page.locator('[data-prev-slide]').click();
+   await page.locator('[data-slide="3"][aria-pressed="true"]').waitFor();
    if(size.width===390){
      await page.goto(base+'/#language');
-     const first=page.locator('.reading-language [data-excerpt]').first();
-     await first.waitFor();
-     await first.click();
-     await page.waitForTimeout(600);
-     const visible=await page.evaluate(()=>{
-       const a=document.querySelector('.reading-annotations').getBoundingClientRect();
-       const view=document.querySelector('#view').getBoundingClientRect();
-       return a.top>=view.top-6&&a.top<view.bottom-8;
-     });
-     assert.ok(visible,'Clause selection did not bring the annotations into view');
-     await page.goto(base+'/#language');
+     assert.equal(await page.locator('.reading-language [data-excerpt]').count(),0);
+     assert.ok((await page.locator('.reading-flow').innerText()).trim().length>20);
+     assert.match(await page.locator('.reading-annotations').innerText(),/Not coded yet/);
+     assert.equal(await page.locator('.reading-source-picker').count(),0);
      await page.locator('[data-language-view="table"]').click();
      const scroll=page.locator('.lm-table-scroll');
      await scroll.waitFor();

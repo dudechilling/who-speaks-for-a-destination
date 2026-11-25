@@ -104,6 +104,7 @@ function readingHighlightRows(rows, selectedId, reviewMode) {
     const field=reviewMode?'data-review-row':'data-excerpt';
     const category=readingProcessKey(reviewMode?(item.draft?.process_type||item.original?.process_type||''):item.process);
     const visible=String(content).trim();
+    if(!reviewMode&&item.source_only)return esc(visible);
     const full=String(reviewMode?(item.verbatim_text||item.text||''):item.text||'').trim();
     return '<span role="button" tabindex="0" class="reading-highlight reading-highlight--'+category+'" '+
       field+'="'+esc(id)+'" aria-pressed="'+(id===selectedId)+'" aria-label="'+esc(full)+'" title="'+esc(READING_PROCESS_NAMES[category])+'">'+esc(visible)+'</span>';
@@ -139,9 +140,13 @@ function readingHighlightRows(rows, selectedId, reviewMode) {
     }
     if(type==='heading') {
       close();
-      const id=reviewMode?item.row_id:item.id;
-      const attr=reviewMode?'data-review-row':'data-excerpt';
-      html+='<h3 class="reading-source-heading"><button type="button" '+attr+'="'+esc(id)+'" aria-pressed="'+(id===selectedId)+'" title="Inspect source heading">'+esc(content)+'</button></h3>';
+      const level=Number.isInteger(item.heading_level)?Math.min(4,Math.max(2,item.heading_level+1)):3;
+      if(item.source_only&&!reviewMode){
+        html+='<h'+level+' class="reading-source-heading reading-source-heading--documented">'+esc(content)+'</h'+level+'>';
+      }else{
+        const id=reviewMode?item.row_id:item.id, attr=reviewMode?'data-review-row':'data-excerpt';
+        html+='<h3 class="reading-source-heading"><button type="button" '+attr+'="'+esc(id)+'" aria-pressed="'+(id===selectedId)+'" title="Inspect source heading">'+esc(content)+'</button></h3>';
+      }
       continue;
     }
     const numbered=content.match(/^(\d+)[.)]\s+([\s\S]+)$/);
@@ -229,8 +234,8 @@ function readingFooter(rows, source, reviewMode) {
 }
 function readingSourcePicker(options,selected) {
   if(options.length<=1) return '';
-  return '<label class="reading-source-picker">About-page capture <select data-reading-source aria-label="Select About-page capture">'+
-    options.map(x=>'<option value="'+esc(x.id)+'" '+(x.id===selected?.id?'selected':'')+'>'+'Capture '+(options.indexOf(x)+1)+' · '+esc(readingDateLabel(x.date||x.capture_date))+'</option>').join('')+
+  return '<label class="reading-source-picker">Source version <select data-reading-source aria-label="Select source version">'+
+    options.map(x=>'<option value="'+esc(x.id)+'" '+(x.id===selected?.id?'selected':'')+'>'+esc(readingDateLabel(x.date||x.capture_date))+'</option>').join('')+
     '</select></label>';
 }
 function readingScaffold(reviewMode, left, right, rows, source, title, selectionLabel, sourcePicker='') {

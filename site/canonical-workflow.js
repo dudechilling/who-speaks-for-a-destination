@@ -93,17 +93,18 @@
        participants:c.participants,voice:c.voice,
        institutional_priority:c.institutional_priority,
        represented_beneficiary:c.represented_beneficiary};
-     const draft={};fields.forEach(key=>draft[key]=String(c['human_'+key]||proposals[key]||''));
+     if(c.source_only){for(const key of fields)if(proposals[key]==='Not coded')proposals[key]='';}
+      const draft={};fields.forEach(key=>draft[key]=String(c['human_'+key]||proposals[key]||''));
      const row=cleanAdjudicatorRow({
        row_id:c.id,about_id:c.source,source_url:c.url||doc?.url,
-       verbatim_text:c.text,text:c.text,source_order:c.source_order,
+       verbatim_text:c.original_text||c.text,text:c.text,source_order:c.source_order,
        section:c.section,type:c.type,capture_date:doc?.date||'',
-       fingerprint:'workbook:'+c.id,
-       annotations:c.human_review_note||'',status:c.human_review_status||'pending',
-       corrected_text:c.human_corrected_clause||'',draft,...proposals
+       fingerprint:'workbook:'+(doc?.source_text_sha256||'legacy')+':'+c.id,
+       annotations:c.source_review_note||c.human_review_note||'',status:c.human_review_status||'pending',
+       corrected_text:c.corrected_text||c.human_corrected_clause||'',draft,...proposals
      });
      if(!row)return null;
-     row.source=c.source;row.about_id=c.source;row.block_id=c.block_id;
+     row.source=c.source;row.about_id=c.source;row.block_id=c.block_id;row.source_only=c.source_only;row.heading_level=c.heading_level;row.list_marker=c.list_marker;row.source_review_status=c.source_review_status;
      row.paragraph_id=c.block_id;row.heading_before=c.heading_before;
      row.join_after=c.join_after;row.block_kind=c.block_kind;
      row.reviewed_at_utc=c.human_reviewed_at_utc||'';
@@ -164,10 +165,12 @@
        if(Object.hasOwn(data,'status'))
          setSheetCell(sheet,r,cols.coding_review_status??cols.human_review_status,data.status);
        if(Object.hasOwn(data,'annotations'))
-         setSheetCell(sheet,r,cols.human_review_note,data.annotations);
+         setSheetCell(sheet,r,cols.source_review_note??cols.human_review_note,data.annotations);
        if(Object.hasOwn(data,'corrected_text'))
-         setSheetCell(sheet,r,cols.human_corrected_clause,data.corrected_text);
-       if(Object.hasOwn(data,'reviewed_at_utc'))
+         setSheetCell(sheet,r,cols.corrected_text??cols.human_corrected_clause,data.corrected_text);
+       if(Object.hasOwn(data,'source_review_status')&&Number.isInteger(cols.source_review_status))
+          setSheetCell(sheet,r,cols.source_review_status,data.source_review_status);
+        if(Object.hasOwn(data,'reviewed_at_utc')&&Number.isInteger(cols.human_reviewed_at_utc))
          setSheetCell(sheet,r,cols.human_reviewed_at_utc,data.reviewed_at_utc);
        if(Object.hasOwn(data,'heading_before')&&Number.isInteger(cols.heading_before))
          setSheetCell(sheet,r,cols.heading_before,data.heading_before);
@@ -223,7 +226,7 @@
      '<p class="micro">Recovered text is retained below. Your correction is used in coding and is exported separately.</p>'+
      '<div class="field"><label>Recovered text</label><blockquote>'+esc(original)+'</blockquote></div>'+
      '<div class="field"><label for="source-corrected-text">Corrected text</label><textarea id="source-corrected-text" data-source-field="corrected_text" rows="5">'+esc(selected.corrected_text||'')+'</textarea></div>'+
-     '<div class="field"><label for="source-heading">Heading before this block</label><input id="source-heading" data-source-field="heading_before" value="'+esc(selected.heading_before||'')+'"></div>'+
+     (selected.source_only?'':'<div class="field"><label for="source-heading">Heading before this block</label><input id="source-heading" data-source-field="heading_before" value="'+esc(selected.heading_before||'')+'"></div>')+
      '<div class="field"><label for="source-paragraph">Paragraph identifier</label><input id="source-paragraph" data-source-field="paragraph_id" value="'+esc(selected.paragraph_id||'')+'"></div>'+
      '<div class="field"><label for="source-order">Source order</label><input id="source-order" data-source-field="source_order" inputmode="numeric" value="'+esc(String(selected.source_order||''))+'"></div>'+
      '<div class="field"><label for="source-note">Source-review note</label><textarea id="source-note" data-source-field="annotations" rows="3">'+esc(selected.annotations||'')+'</textarea></div>'+
@@ -232,7 +235,7 @@
      '<button type="button" class="reading-export" data-export-xlsx>Export XLSX</button>';
    const right='<header class="reading-review-head"><h2>Review source text</h2><div class="reading-review-actions">'+actions+'</div></header>'+
      '<div class="reading-scroll">'+fieldsHtml+'</div>';
-   const toolbar='<div class="reading-review-toolbar"><button type="button" data-open-coding-review>Open coding review</button>'+
+   const toolbar='<div class="reading-review-toolbar">'+(state.language?.clauses.some(r=>r.source_only)?'':'<button type="button" data-open-coding-review>Open coding review</button>')+
      '<button type="button" data-language-mode="analysis">← Clause analysis</button>'+
      '<button type="button" data-review-prev '+(rows.length?'':'disabled')+'>← Previous</button><button type="button" data-review-next '+(rows.length?'':'disabled')+'>Next →</button></div>'+
      (state.adjudicatorNotice?'<p class="reading-review-notice" role="status">'+esc(state.adjudicatorNotice)+'</p>':'');
@@ -242,7 +245,7 @@
      (url?'<p class="reading-review-source"><a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">View original source ↗</a></p>':'');
  }
  adjudicator=function simplifiedAdjudicator(){
-   if(state.sourceReview)return sourceReviewer();
+   if(state.sourceReview||state.language?.clauses.some(r=>r.source_only))return sourceReviewer();
    readingEnsureReviewYear();
    const rows=readingReviewRows();
    const selected=rows.find(r=>r.row_id===state.selected)||rows[0]||null;

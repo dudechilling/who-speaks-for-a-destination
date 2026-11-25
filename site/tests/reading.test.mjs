@@ -186,3 +186,16 @@ test('source-only Phase 01A shows an uncoded notice and workbook download',()=>{
   assert.match(menu,/Source-only phase — coding is not enabled/);
   assert.match(menu,/data-export-xlsx>Download complete XLSX/);
 });
+
+test('Source-only blocks display semantic headings and lists without coding controls',()=>{
+ const c=setup(),html=c.readingHighlightRows([
+ {id:'b1',source:'VI-H',source_only:true,type:'heading',heading_level:1,text:'ABOUT US'},
+ {id:'b2',source:'VI-H',source_only:true,type:'paragraph',block_id:'P2',text:'Research & visitors'},
+ {id:'b3',source:'VI-H',source_only:true,type:'list_item',text:'1. First objective.'},
+ {id:'b4',source:'VI-H',source_only:true,type:'list_item',text:'2. Second objective.'}
+ ],null,false);
+ assert.match(html,/<h2 class="reading-source-heading/);assert.match(html,/Research &amp; visitors/);
+ assert.match(html,/<ol start="1"><li>First objective\.<\/li><li>Second objective\.<\/li><\/ol>/);
+ assert.doesNotMatch(html,/data-excerpt|reading-highlight/);
+ assert.equal(c.readingSourcePicker([{id:'one'}],{id:'one'}),'');
+});

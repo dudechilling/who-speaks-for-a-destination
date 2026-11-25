@@ -72,15 +72,10 @@ test('Table renders source years for one selected RDMO, with no cross-region dat
   assert.match(out,/data-theme-cell="businesses\|2002"/);
   assert.doesNotMatch(out,/lm-evidence-pane|data-language-scope|lm-source-key|provisional coding framework/i);
 });
-test('Agency summary never treats free-text representation notes as voice categories',()=>{
-  const c=fixture(),out=c.window.SiteRefinements.compactOverview();
-  assert.match(out,/Processes/);
-  assert.match(out,/Actors/);
-  assert.match(out,/Named groups · search cues/);
-  assert.match(out,/Priorities · search cues/);
-  assert.doesNotMatch(out,/Affected participants<\/h3>/);
-  assert.doesNotMatch(out,/Agency \/ voice/);
-  assert.doesNotMatch(out,/Claims community stewardship/);
+test('Uncoded public overview does not display legacy proposal or keyword counts',()=>{
+ const c=fixture(),out=c.window.SiteRefinements.compactOverview();
+ assert.match(out,/Not coded yet/);
+ assert.doesNotMatch(out,/search cues|Processes|Actors|lm-mini-row/);
 });
 test('Timeline options track selected RDMO capture years rather than a corpus-wide annual sequence',()=>{
   const c=fixture();
@@ -88,15 +83,20 @@ test('Timeline options track selected RDMO capture years rather than a corpus-wi
   c.state.region='northern';
   assert.deepEqual([...c.window.SiteRefinements.regionSourceYears()],[2000]);
 });
-test('Selected annotations suppress quotes, absent modality and un-coded voice while providing search cues',()=>{
-  const c=fixture();
-  const selected={...c.state.language.clauses[0],modality:'none',institutional_priority:'Not stated',
-    social_actor_representation:'Not stated',annotations:'Not specified'};
-  const output=c.readingAnnotations(selected);
-  assert.doesNotMatch(output,/<blockquote|>Modality<|>Agency \/ voice<|VI-H-001/);
-  assert.match(output,/Named groups · search cues/);
-  assert.match(output,/Tourism businesses/);
-  assert.match(output,/definition-trigger/);
+test('Public analysis is withheld rather than showing legacy cue categories',()=>{
+ const c=fixture(),out=c.readingAnnotations(c.state.language.clauses[0]);
+ assert.match(out,/Not coded yet/);assert.doesNotMatch(out,/search cues|Tourism businesses|Material process/);
+});
+test('Source-only table keeps region dates without inferring results',()=>{
+ const c=fixture();c.state.language.clauses[0].source_only=true;
+ const out=c.window.SiteRefinements.tableView();
+ assert.match(out,/<th scope="col">2002<\/th>/);assert.match(out,/<th scope="col">2026<\/th>/);
+ assert.match(out,/Pending coding/);assert.doesNotMatch(out,/data-theme-cell|search cues|<th scope="col">2000<\/th>/);
+});
+test('Codebook Markdown renders semantic tables and escapes cell text',()=>{
+ const c=fixture(),out=c.md('# Codebook\n\n| Label | Explanation |\n|---|---|\n| Process | <script>alert(1)</script> |');
+ assert.match(out,/<table><thead><tr>/);assert.match(out,/<th scope="col">Label<\/th>/);
+ assert.doesNotMatch(out,/<script>/);assert.match(out,/&lt;script&gt;/);
 });
 test('Corpus omits the Type filter and export and the controls share one grid',()=>{
  const workflow=fs.readFileSync(new URL('../canonical-workflow.js',import.meta.url),'utf8');
