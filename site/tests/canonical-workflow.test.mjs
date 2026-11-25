@@ -32,6 +32,21 @@ test('Canonical source-only workbook matches inventory with no analytical codes'
   total+=records.length;
  }
  assert.equal(total,332);
+ const suggestions=rows('Clauses');
+ assert.equal(suggestions.length,772);
+ assert.equal(new Set(suggestions.map(r=>r.clause_id)).size,suggestions.length);
+ assert.deepEqual([...new Set(suggestions.map(r=>r.source_id))].sort(),[...index.map(r=>r.source_id)].sort());
+ const blocks=new Map(index.flatMap(d=>rows(d.worksheet).map(r=>[r.block_id,r])));
+ for(const r of suggestions){
+  const b=blocks.get(r.block_id);
+  assert.ok(b&&b.source_id===r.source_id&&b.block_kind!=='heading');
+  assert.equal((b.corrected_text||b.original_text).trim().slice(r.start_offset,r.end_offset),r.clause_text);
+  assert.equal(r.coding_review_status,'suggested');
+  assert.equal(r.boundary_provenance,'machine_proposed');
+  assert.equal(r.boundary_review_status,'unreviewed');
+  for(const field of fields)assert.equal(r[field],'');
+ }
+
  const vi=rows(index.find(r=>r.source_id==='VI-2002-01').worksheet);
  assert.equal(vi.filter(r=>r.block_kind==='heading').length,1);
  assert.equal(vi.filter(r=>r.block_kind==='paragraph').length,5);

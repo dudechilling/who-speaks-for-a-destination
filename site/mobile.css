@@ -602,3 +602,11 @@
 .manual-editor .manual-primary:active,.manual-primary:active{background:#203c2a;color:#fff;}
 .manual-editor button:focus-visible,.manual-use:focus-visible,.manual-primary:focus-visible{outline:2px solid #ad6d4e;outline-offset:2px;}
 .manual-evidence>label{display:block;margin:5px 0;}
+
+/* Suggested clause boundaries: neutral, not process-type colours. */
+.manual-suggestion{cursor:pointer;text-decoration:underline dotted #809b79;text-underline-offset:3px;text-decoration-thickness:1px;}
+.manual-suggestion:hover{background:#d3e3cc;color:#20442b;}
+.manual-suggestion.manual-selected{background:#d3e3cc;color:#20442b;}
+.manual-boundary-tools{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;font-size:12px;line-height:1.3;}
+.manual-boundary-tools span{color:#526c4d;}
+.manual-boundary-tools button{white-space:nowrap;}

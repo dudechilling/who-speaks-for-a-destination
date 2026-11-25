@@ -1,8 +1,8 @@
-/* Researcher-owned annotations. Source blocks are never automatically segmented. */
+/* Researcher-owned annotations. Suggested boundaries remain uncoded pending review. */
 'use strict';
 (() => {
 const fields=['process_type','process','participants','voice','institutional_priority','represented_beneficiary'];
-const headers=['clause_id','source_id','block_id','start_offset','end_offset','clause_text','block_fingerprint',...fields,'process_start','process_end','coding_provenance','coding_review_status','coding_review_note'];
+const headers=['clause_id','source_id','block_id','start_offset','end_offset','clause_text','block_fingerprint',...fields,'process_start','process_end','coding_provenance','coding_review_status','coding_review_note','boundary_provenance','boundary_review_status'];
 const sections={process_type:'Process types',voice:'Voice',institutional_priority:'Institutional priorities',represented_beneficiary:'Beneficiaries and social groups'};
 let catalog={},data=null,workspace=null,selected=null,candidate=null,enabled=false,notice='';
 function parseBook(src){
@@ -28,6 +28,8 @@ function decode(row){
  try{r.participants=Array.isArray(row.participants)?row.participants:JSON.parse(row.participants||'[]');}catch{r.participants=[];}
  if(!Array.isArray(r.participants))r.participants=[];
  r.institutional_priority=array(row.institutional_priority);r.represented_beneficiary=array(row.represented_beneficiary);
+ if(!r.boundary_provenance)r.boundary_provenance='human_original';
+ if(!r.boundary_review_status)r.boundary_review_status=r.coding_review_status==='coded'?'confirmed':'selected';
  return r;
 }
 function valid(r,b){
@@ -37,7 +39,9 @@ function ensure(){
  if(!state.language)return null;
  if(data===state.language)return workspace;
  data=state.language;selected=null;candidate=null;notice='';
- const key='rdmo-manual-clauses-v1:'+hash(new Uint8Array(data.workbookBytes));
+ const fileHash=hash(new Uint8Array(data.workbookBytes));
+ // Preserve browser work against the preceding, identical source workbook.
+ const key='rdmo-manual-clauses-v1:'+(fileHash==='155765-ef26b43d-2301171d'?'180426-bab46780-c70d2348':fileHash);
  const imported=Object.create(null),changes=Object.create(null),invalid=[];
  const wb=XLSX.read(data.workbookBytes,{type:'array'});
  if(wb.Sheets.Clauses)for(const row of XLSX.utils.sheet_to_json(wb.Sheets.Clauses,{defval:''})){
@@ -52,15 +56,17 @@ function ensure(){
  return workspace;
 }
 function all(){
- const w=ensure();return w?Object.values({...w.imported,...w.changes}).filter(Boolean).filter(r=>valid(r,blockFor(r))):[];
+ const w=ensure();return w?(w.rows||(w.rows=Object.values({...w.imported,...w.changes}).filter(Boolean).filter(r=>valid(r,blockFor(r))))):[];
 }
 function persist(r,id=r?.clause_id){
  const w=ensure();if(!w||!id)return;
- if(r===null&&!Object.hasOwn(w.imported,id))delete w.changes[id];else w.changes[id]=r;
+ if(r===null&&!Object.hasOwn(w.imported,id))delete w.changes[id];else w.changes[id]=r;w.rows=null;
  try{localStorage.setItem(w.key,JSON.stringify({changes:w.changes}));return true;}catch{notice='Browser storage failed; export before leaving.';return false;}
 }
-const coded=r=>r.coding_review_status==='coded'&&['human_original','human_accepted','human_edited'].includes(r.coding_provenance);
-const records=()=>{const src=readingRecords(state.region,state.year).sources[0]?.id;return all().filter(r=>r.source_id===src).sort((a,b)=>(blockFor(a)?.source_order||0)-(blockFor(b)?.source_order||0)||a.start_offset-b.start_offset);};
+const excluded=r=>r.boundary_review_status==='rejected';
+const suggested=r=>r.coding_review_status==='suggested';
+const coded=r=>!excluded(r)&&r.coding_review_status==='coded'&&['human_original','human_accepted','human_edited'].includes(r.coding_provenance);
+const records=()=>{const src=readingRecords(state.region,state.year).sources[0]?.id;return all().filter(r=>r.source_id===src&&!excluded(r)).sort((a,b)=>(blockFor(a)?.source_order||0)-(blockFor(b)?.source_order||0)||a.start_offset-b.start_offset);};
 const current=()=>records().find(r=>r.clause_id===selected&&(enabled||coded(r)));
 function rangeFor(b,a,z){
  const t=txt(b);while(a<z&&/\s/.test(t[a]))a++;while(z>a&&/\s/.test(t[z-1]))z--;
@@ -68,21 +74,21 @@ function rangeFor(b,a,z){
 }
 function makeClause(){
  if(!candidate||!valid(candidate,blockFor(candidate)))return;
- const r=all().find(r=>r.block_id===candidate.block_id&&r.source_id===candidate.source_id&&r.start_offset===candidate.start_offset&&r.end_offset===candidate.end_offset);
+ const r=all().find(r=>!excluded(r)&&r.block_id===candidate.block_id&&r.source_id===candidate.source_id&&r.start_offset===candidate.start_offset&&r.end_offset===candidate.end_offset);
  if(r)selected=r.clause_id;else{
-  const fresh={...candidate,clause_id:candidate.block_id+':'+candidate.start_offset+':'+candidate.end_offset,process_type:'',process:'',process_start:null,process_end:null,participants:[],voice:'',institutional_priority:[],represented_beneficiary:[],coding_provenance:'',coding_review_status:'draft',coding_review_note:''};
+  const fresh={...candidate,clause_id:candidate.block_id+':'+candidate.start_offset+':'+candidate.end_offset,process_type:'',process:'',process_start:null,process_end:null,participants:[],voice:'',institutional_priority:[],represented_beneficiary:[],coding_provenance:'',coding_review_status:'draft',coding_review_note:'',boundary_provenance:'human_original',boundary_review_status:'selected'};
   persist(fresh);selected=fresh.clause_id;
  }
  candidate=null;getSelection()?.removeAllRanges();notice='';refresh(true);focusEditor();
 }
 function blockMarkup(b,visible){
  const t=txt(b),start=t.indexOf(visible);if(start<0)return esc(visible);
- const end=start+visible.length,rs=all().filter(r=>r.block_id===b.id&&r.source_id===b.source&&(enabled||coded(r)));
+ const end=start+visible.length,rs=all().filter(r=>r.block_id===b.id&&r.source_id===b.source&&!excluded(r)&&(enabled||coded(r)));
  const pts=[...new Set([start,end,...rs.flatMap(r=>[Math.max(start,Math.min(end,r.start_offset)),Math.max(start,Math.min(end,r.end_offset))])])].sort((a,b)=>a-b);
  let out='';
  for(let i=0;i<pts.length-1;i++){
   const a=pts[i],z=pts[i+1],cover=rs.filter(r=>r.start_offset<=a&&r.end_offset>=z),pick=cover.find(r=>r.clause_id===selected),r=pick||cover.sort((x,y)=>(x.end_offset-x.start_offset)-(y.end_offset-y.start_offset))[0];
-  const words=esc(t.slice(a,z));out+=r?'<span role="button" tabindex="0" class="manual-annotation'+(pick?' manual-selected reading-highlight--'+esc(entry('Process types',r.process_type)?r.process_type:'other'):'')+'" data-manual-clause="'+esc(r.clause_id)+'" aria-pressed="'+!!pick+'">'+words+'</span>':words;
+  const words=esc(t.slice(a,z));out+=r?'<span role="button" tabindex="0" class="manual-annotation'+(suggested(r)?' manual-suggestion':'')+(pick?' manual-selected reading-highlight--'+esc(entry('Process types',r.process_type)?r.process_type:'other'):'')+'" data-manual-clause="'+esc(r.clause_id)+'" aria-pressed="'+!!pick+'">'+words+'</span>':words;
  }
  return '<span class="manual-source-block" data-source-block="'+esc(b.id)+'" data-base-offset="'+start+'"'+(enabled?' tabindex="0" aria-label="Source block. Select text, or press Enter to choose a clause."':'')+'>'+out+'</span>';
 }
@@ -115,7 +121,7 @@ function participantEditor(r){
  return '<div class="manual-field"><label for="manual-role">Participants</label>'+tip('Coding fields','participants','manual-role')+'<select id="manual-role">'+options('Participant roles','',x=>roles.includes(x),'Choose role…')+'</select><div class="manual-row"><label for="manual-presence">Participant</label><select id="manual-presence"><option value="explicit">Explicit (select words)</option><option value="implicit">Implicit</option><option value="omitted">Omitted</option></select></div><input id="manual-implicit" hidden placeholder="Implicit participant" aria-label="Implicit participant"><div id="manual-actor-wrap" hidden><label for="manual-actor-group">Actor group</label>'+tip('Beneficiaries and social groups','rdmo','manual-actor-group')+'<select id="manual-actor-group">'+options('Beneficiaries and social groups','',x=>x!=='not_expressed')+'</select></div><button type="button" data-manual-action="participant">Add participant</button><div class="manual-participants">'+r.participants.map((p,i)=>'<div><span><b>'+esc(label('Participant roles',p.role))+'</b> '+esc(p.words||p.presence)+(p.group?' · '+esc(label('Beneficiaries and social groups',p.group)):'')+'</span><button type="button" data-manual-remove-participant="'+i+'" aria-label="Remove participant">×</button></div>').join('')+'</div>'+helpArea()+'</div>';
 }
 function editor(r){
- return '<div class="manual-editor"><div class="manual-evidence"><div class="manual-editor-top"><b>'+(coded(r)?'Saved clause':'Clause draft')+'</b><button type="button" data-manual-action="overview">All clauses</button></div><label for="manual-evidence">Selected clause — select words here to assign the process or participants.</label><textarea readonly id="manual-evidence" rows="'+Math.min(5,Math.max(2,Math.ceil(r.clause_text.length/48)))+'">'+esc(r.clause_text)+'</textarea></div>'+category('process_type',r)+'<div class="manual-field"><label for="manual-process">Process</label>'+tip('Coding fields','process')+'<div class="manual-span-row"><input readonly id="manual-process" value="'+esc(r.process)+'" placeholder="Select process words"><button type="button" data-manual-action="process">Use selected words</button></div>'+helpArea()+'</div>'+participantEditor(r)+category('voice',r)+multi('institutional_priority',r)+multi('represented_beneficiary',r)+'<div class="manual-field"><label for="manual-note">Note (optional)</label><textarea id="manual-note" rows="2" data-manual-field="coding_review_note">'+esc(r.coding_review_note)+'</textarea></div><div class="manual-actions"><button type="button" class="manual-primary" data-manual-action="save">Save clause</button><button type="button" data-manual-action="delete">Delete clause</button></div><p class="manual-status" role="status">'+esc(notice||'Draft retained in this browser. Export the XLSX to keep a portable copy.')+'</p></div>';
+ return '<div class="manual-editor"><div class="manual-evidence"><div class="manual-editor-top"><b>'+(coded(r)?'Saved clause':suggested(r)?'Suggested clause':'Clause draft')+'</b><button type="button" data-manual-action="overview">All clauses</button></div><div class="manual-boundary-tools"><span>'+esc(r.boundary_provenance==='machine_proposed'?(r.boundary_review_status==='adjusted'?'Boundary adjusted by you':r.boundary_review_status==='confirmed'?'Boundary confirmed by you':'AI-suggested boundary — review before saving'):'Your selected boundary')+'</span><button type="button" data-manual-action="adjust">Adjust boundary</button></div><label for="manual-evidence">Selected clause — select words here to assign the process or participants.</label><textarea readonly id="manual-evidence" rows="'+Math.min(5,Math.max(2,Math.ceil(r.clause_text.length/48)))+'">'+esc(r.clause_text)+'</textarea></div>'+category('process_type',r)+'<div class="manual-field"><label for="manual-process">Process</label>'+tip('Coding fields','process')+'<div class="manual-span-row"><input readonly id="manual-process" value="'+esc(r.process)+'" placeholder="Select process words"><button type="button" data-manual-action="process">Use selected words</button></div>'+helpArea()+'</div>'+participantEditor(r)+category('voice',r)+multi('institutional_priority',r)+multi('represented_beneficiary',r)+'<div class="manual-field"><label for="manual-note">Note (optional)</label><textarea id="manual-note" rows="2" data-manual-field="coding_review_note">'+esc(r.coding_review_note)+'</textarea></div><div class="manual-actions"><button type="button" class="manual-primary" data-manual-action="save">Save clause</button><button type="button" data-manual-action="delete">'+(suggested(r)?'Exclude suggestion':'Delete clause')+'</button></div><p class="manual-status" role="status">'+esc(notice||'Draft retained in this browser. Export the XLSX to keep a portable copy.')+'</p></div>';
 }
 function readout(r){
  const parts=r.participants.map(p=>esc(label('Participant roles',p.role))+': '+esc(p.words||p.presence)).join('<br>');
@@ -129,13 +135,13 @@ function counts(rs,k){
 }function overview(){
  const rs=records(),done=rs.filter(coded);
  if(!enabled&&!done.length)return '<p class="lm-empty">Not coded yet. Clause analysis will appear after researcher coding.</p>';
- let out=enabled?'<p>Select the exact words of a clause in the About page and choose <b>Code selected text</b>. Select within one paragraph or list item.</p><button type="button" class="manual-primary" data-manual-action="use" '+(candidate?'':'disabled')+'>Select text to code</button><p class="manual-status" role="status">'+esc(notice)+'</p>':'';
- out+='<p class="manual-count">'+done.length+' coded clause'+(done.length===1?'':'s')+(enabled?' · '+(rs.length-done.length)+' draft(s)':'')+'</p>';
+ let out=enabled?'<p>Click a suggested clause in the About page or the list below to start coding. Adjust its boundary if needed, or select your own text.</p><button type="button" class="manual-primary" data-manual-action="use" '+(candidate?'':'disabled')+'>Select text to code</button><p class="manual-status" role="status">'+esc(notice)+'</p>':'';
+ out+='<p class="manual-count">'+done.length+' coded clause'+(done.length===1?'':'s')+(enabled?' · '+rs.filter(suggested).length+' suggested · '+rs.filter(r=>!coded(r)&&!suggested(r)).length+' drafts':'')+'</p>';
  if(!enabled)for(const [k,title,s] of [['process_type','Processes','Process types'],['institutional_priority','Priorities','Institutional priorities'],['represented_beneficiary','Beneficiaries','Beneficiaries and social groups'],['agency','Material Actors','Beneficiaries and social groups']]){
   const m=counts(done,k);if(Object.keys(m).length)out+='<h3>'+title+'</h3><dl class="manual-counts">'+Object.entries(m).map(([v,n])=>'<dt>'+esc(label(s,v))+'</dt><dd>'+n+'</dd>').join('')+'</dl>';
  }
  const visible=enabled?rs:done;
- return out+(visible.length?'<h3>'+ (enabled?'Your clauses':'Coded clauses')+'</h3><div class="manual-clause-list">'+visible.map(r=>'<button type="button" data-manual-open="'+esc(r.clause_id)+'"><span>'+esc(r.clause_text)+'</span><small>'+esc(coded(r)?label('Process types',r.process_type):'Draft')+'</small></button>').join('')+'</div>':'');
+ return out+(visible.length?'<h3>'+ (enabled?'Clauses to review':'Coded clauses')+'</h3><div class="manual-clause-list">'+visible.map(r=>'<button type="button" data-manual-open="'+esc(r.clause_id)+'"><span>'+esc(r.clause_text)+'</span><small>'+esc(coded(r)?label('Process types',r.process_type):suggested(r)?'Suggested · uncoded':'Draft')+'</small></button>').join('')+'</div>':'');
 }
 function annotations(){const r=current();return r?(enabled?editor(r):readout(r)):overview();}
 function refresh(left=false){
@@ -168,13 +174,13 @@ function save(r){
  const prior=workspace.imported[r.clause_id],machine=prior?.coding_provenance==='machine_proposed';
  const changed=machine&&fields.some(k=>JSON.stringify(prior[k])!==JSON.stringify(r[k]));
  const provenance=machine?(changed?'human_edited':'human_accepted'):(r.coding_provenance||'human_original');
- if(persist({...r,coding_review_status:'coded',coding_provenance:provenance}))notice='Clause saved locally. Export XLSX to retain your work.';
+ if(persist({...r,coding_review_status:'coded',coding_provenance:provenance,boundary_review_status:r.boundary_review_status==='adjusted'?'adjusted':'confirmed'}))notice='Clause saved locally. Export XLSX to retain your work.';
  refresh(true);
 }
-function chooseBlock(b){
+function chooseBlock(b,adjust=null){
  const body=document.querySelector('.reading-language .reading-annotations .reading-scroll');if(!enabled||!body)return;
- body.innerHTML='<div class="manual-editor"><label for="manual-block-selector">Select the exact clause within this source block.</label><textarea readonly id="manual-block-selector" rows="6">'+esc(txt(b))+'</textarea><button type="button" class="manual-primary" data-manual-use-block="'+esc(b.id)+'">Code selected text</button><button type="button" data-manual-action="overview">Cancel</button><p class="manual-status" role="status"></p></div>';
- document.querySelector('#manual-block-selector').focus();
+ body.innerHTML='<div class="manual-editor"><label for="manual-block-selector">Select the exact clause within this source block.</label><textarea readonly id="manual-block-selector" rows="6">'+esc(txt(b))+'</textarea><button type="button" class="manual-primary" data-manual-use-block="'+esc(b.id)+'">'+(adjust?'Use adjusted boundary':'Code selected text')+'</button><button type="button" data-manual-action="cancel-boundary">Cancel</button><p class="manual-status" role="status"></p></div>';
+ const input=document.querySelector('#manual-block-selector');input.focus();if(adjust)input.setSelectionRange(adjust.start_offset,adjust.end_offset);
  if(matchMedia('(max-width:820px)').matches)document.querySelector('.reading-annotations')?.scrollIntoView({block:'start'});
 }
 function writeToWorkbook(wb){
@@ -186,7 +192,7 @@ function writeToWorkbook(wb){
   for(const b of XLSX.utils.sheet_to_json(wb.Sheets[n],{defval:''}))blocks.set(String(b.block_id),{text:b.corrected_text||b.original_text,source:b.source_id});
  }
  for(const r of rs){const b=blocks.get(r.block_id);if(!valid(r,b)||b.source!==r.source_id)throw Error('A source correction conflicts with a selected clause. Export after resolving the correction or clause.');}
- const values=rs.map(r=>headers.map(h=>h==='participants'?JSON.stringify(r[h]):Array.isArray(r[h])?r[h].join('; '):r[h]??''));
+ const values=rs.map(r=>headers.map(h=>h==='participants'?(r[h].length?JSON.stringify(r[h]):''):Array.isArray(r[h])?r[h].join('; '):r[h]??''));
  const sheet=XLSX.utils.aoa_to_sheet([headers,...values]);
  sheet['!cols']=headers.map(h=>({wch:h==='clause_text'?75:h==='participants'?65:h==='coding_review_note'?48:24}));
  sheet['!autofilter']={ref:sheet['!ref']};
@@ -207,7 +213,7 @@ document.addEventListener('keyup',capture);
 document.addEventListener('click',event=>{
  const t=event.target.closest('button,[data-manual-clause]');if(!t)return;
  const action=t.dataset.manualAction,open=t.dataset.manualOpen||t.dataset.manualClause;
- if(open){if(getSelection()?.toString()&&t.dataset.manualClause)return;event.preventDefault();event.stopImmediatePropagation();selected=open;notice='';refresh(true);focusEditor();return;}
+ if(open){if(t.dataset.manualClause&&getSelection()?.toString()&&candidate)return;event.preventDefault();event.stopImmediatePropagation();selected=open;candidate=null;getSelection()?.removeAllRanges();notice='';refresh(true);focusEditor();return;}
  if(t.dataset.manualHelp){
   event.preventDefault();const field=t.closest('.manual-field'),area=field?.querySelector('.manual-tip');if(!area)return;
   const s=t.dataset.manualHelp,k=t.dataset.key,id=t.dataset.select,chosen=id?document.getElementById(id)?.value:'';
@@ -216,7 +222,21 @@ document.addEventListener('click',event=>{
   area.textContent=(entry(s,k)?.tip||'')+(option?' '+option.label+': '+option.tip:'');
   area.hidden=!area.hidden;t.setAttribute('aria-expanded',String(!area.hidden));return;
  }
- if(t.dataset.manualUseBlock){const b=data.clauses.find(x=>x.id===t.dataset.manualUseBlock),e=evidence('manual-block-selector');if(e&&b){candidate=rangeFor(b,e.start,e.end);makeClause();}else status('Select the clause words first.');return;}
+ if(t.dataset.manualUseBlock){
+  const b=data.clauses.find(x=>x.id===t.dataset.manualUseBlock),e=evidence('manual-block-selector');
+  if(!e||!b){status('Select the clause words first.');return;}
+  const r=current(),next=rangeFor(b,e.start,e.end);
+  if(!next)return;
+  if(r&&r.block_id===b.id){
+   if(r.start_offset===next.start_offset&&r.end_offset===next.end_offset){refresh();focusEditor();return;}
+   const existing=records().find(x=>x.clause_id!==r.clause_id&&x.block_id===b.id&&x.start_offset===next.start_offset&&x.end_offset===next.end_offset);
+   if(existing){status('This exact boundary already exists. Cancel and select it from the list.');return;}
+   if(!suggested(r)&&!confirm('Changing a boundary clears codes for this clause. Continue?'))return;
+   persist({...r,...next,process_type:'',process:'',process_start:null,process_end:null,participants:[],voice:'',institutional_priority:[],represented_beneficiary:[],coding_provenance:'',coding_review_status:'draft',coding_review_note:'',boundary_review_status:'adjusted'});
+   notice='Boundary adjusted. Code the selected words.';refresh(true);focusEditor();
+  }else{candidate=next;makeClause();}
+  return;
+ }
  if(t.hasAttribute('data-manual-mode')){
   event.preventDefault();event.stopImmediatePropagation();enabled=!enabled;selected=null;candidate=null;state.sourceReview=false;state.languageMode='analysis';if(window.LanguageMatrix?.ui)window.LanguageMatrix.ui.view='timeline';render();return;
  }
@@ -227,9 +247,17 @@ document.addEventListener('click',event=>{
  if(!action)return;event.preventDefault();event.stopImmediatePropagation();
  if(action==='use'){makeClause();return;}
  if(action==='overview'){selected=null;notice='';refresh(true);return;}
+ if(action==='cancel-boundary'){refresh();focusEditor();return;}
  if(!r)return;
  if(action==='save'){save(r);return;}
- if(action==='delete'){if(confirm('Remove this clause annotation? The source text will not change.')){persist(null,r.clause_id);selected=null;notice='Clause removed.';refresh(true);}return;}
+ if(action==='adjust'){chooseBlock(blockFor(r),r);return;}
+ if(action==='delete'){
+  if(confirm(suggested(r)?'Exclude this suggested boundary? Source text remains unchanged.':'Remove this clause annotation? The source text will not change.')){
+   if(r.boundary_provenance==='machine_proposed')persist({...r,process_type:'',process:'',process_start:null,process_end:null,participants:[],voice:'',institutional_priority:[],represented_beneficiary:[],coding_provenance:'',coding_review_status:'excluded',coding_review_note:'',boundary_review_status:'rejected'});
+   else persist(null,r.clause_id);
+   selected=null;notice='Clause removed.';refresh(true);
+  }return;
+ }
  if(action==='process'){const e=evidence();if(!e){status('Select the process words in the clause first.');return;}mutate(r,{process:e.words,process_start:e.start,process_end:e.end});refresh();return;}
  if(action==='participant'){
   const role=document.getElementById('manual-role').value,presence=document.getElementById('manual-presence').value,e=evidence();
@@ -263,7 +291,7 @@ document.addEventListener('input',event=>{const r=current();if(r&&event.target.i
 document.addEventListener('keydown',event=>{
  if(event.key!=='Enter'&&event.key!==' ')return;
  const t=event.target;if(t.matches('[data-manual-clause]')){event.preventDefault();t.click();return;}
- if(enabled&&t.matches('[data-source-block]')){event.preventDefault();const b=data.clauses.find(b=>b.id===t.dataset.sourceBlock);if(b)chooseBlock(b);}
+ if(enabled&&t.matches('[data-source-block]')){event.preventDefault();const b=data.clauses.find(b=>b.id===t.dataset.sourceBlock);if(b){selected=null;chooseBlock(b);}}
 },true);
 const oldAnnotations=readingAnnotations;
 readingAnnotations=function manualAnnotations(row,source){return state.language?.clauses.some(b=>b.source_only)?annotations():oldAnnotations(row,source);};
