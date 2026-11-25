@@ -89,10 +89,10 @@
  workbookRows=function canonicalReviewerRows(){
    return (state.language?.clauses||[]).map(c=>{
      const doc=(state.language?.docs||[]).find(d=>d.id===c.source);
-     const proposals={process_type:c.process,actor:c.actor,
-       affected_participant:c.affected_participant,agency_voice:proposedVoice(c.agency),
-       modality:c.modality,institutional_priority:c.institutional_priority,
-       social_actor_representation:c.social_actor_representation};
+     const proposals={process_type:c.process,process:c.process_words,
+       participants:c.participants,voice:c.voice,
+       institutional_priority:c.institutional_priority,
+       represented_beneficiary:c.represented_beneficiary};
      const draft={};fields.forEach(key=>draft[key]=String(c['human_'+key]||proposals[key]||''));
      const row=cleanAdjudicatorRow({
        row_id:c.id,about_id:c.source,source_url:c.url||doc?.url,
@@ -150,19 +150,19 @@
    for(const name of wb.SheetNames){
      if(['Index','Review Log','Theme Findings','Source Decisions'].includes(name))continue;
      const sheet=wb.Sheets[name],raw=XLSX.utils.sheet_to_json(sheet,{header:1,defval:''});
-     const h=raw.findIndex(row=>row[0]==='clause_id'||row[0]==='row_id');
+     const h=raw.findIndex(row=>row[0]==='clause_id'||row[0]==='row_id'||row[0]==='block_id');
      if(h<0)continue;
      const cols=Object.fromEntries(raw[h].map((s,i)=>[String(s),i]));
      for(let r=h+1;r<raw.length;r++){
-       const id=String(raw[r][cols.clause_id??cols.row_id]||'');
+       const id=String(raw[r][cols.clause_id??cols.row_id??cols.block_id]||'');
        const local=state.visitor.overrides[id],baseline=existing.get(id);
        if(!local||!baseline||local.fingerprint!==baseline.fingerprint)continue;
        const data=local.values||{};
        if(!Object.keys(data).length)continue;
        for(const f of fields)if(Object.hasOwn(data,f))
-         setSheetCell(sheet,r,cols['human_'+f],data[f]);
+         setSheetCell(sheet,r,cols[f]??cols['human_'+f],data[f]);
        if(Object.hasOwn(data,'status'))
-         setSheetCell(sheet,r,cols.human_review_status,data.status);
+         setSheetCell(sheet,r,cols.coding_review_status??cols.human_review_status,data.status);
        if(Object.hasOwn(data,'annotations'))
          setSheetCell(sheet,r,cols.human_review_note,data.annotations);
        if(Object.hasOwn(data,'corrected_text'))

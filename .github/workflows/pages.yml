@@ -56,7 +56,7 @@ jobs:
           assert {'source_id','worksheet','capture_timestamp','source_verification_status','source_text_sha256'}.issubset(header)
           assert len(index)-2 >= 36
           total=0
-          required={'block_id','source_id','source_order','block_kind','paragraph_id','original_text','corrected_text','source_review_status'}
+          required={'block_id','source_id','source_order','block_kind','paragraph_id','original_text','corrected_text','source_review_status','process_type','process','participants','voice','institutional_priority','represented_beneficiary'}
           for sheet in [book[name] for name in book.sheetnames if name.startswith('SRC_')]:
               columns={cell.value for cell in next(sheet.rows)}
               assert required.issubset(columns),sheet.title

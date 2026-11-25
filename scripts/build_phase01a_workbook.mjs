@@ -29,7 +29,7 @@ const files={
 // likely duplicate pairs remain separately selectable in this increment.
 const duplicates={};
 const indexHeaders=['source_id','worksheet','region','page_title','genre','source_url','original_url','capture_timestamp','publication_date','source_verification_status','source_text_status','source_text_sha256','matching_capture_ids','included_sections','excluded_sections','rights_and_provenance_note','archival_reference'];
-const blockHeaders=['block_id','source_id','source_order','block_kind','heading_level','heading_text','paragraph_id','list_level','list_marker','original_text','corrected_text','source_review_status','source_review_note'];
+const blockHeaders=['block_id','source_id','source_order','block_kind','heading_level','heading_text','paragraph_id','list_level','list_marker','original_text','corrected_text','source_review_status','source_review_note','process_type','process','participants','voice','institutional_priority','represented_beneficiary','coding_provenance','coding_review_status','coding_review_note'];
 
 function shaFile(p){return crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');}
 function parseCsv(text){const rows=[];let quote=false,cell='',row=[];for(let i=0;i<text.length;i++){const ch=text[i];if(ch==='"'){if(quote&&text[i+1]==='"'){cell+='"';i++;}else quote=!quote;}else if(ch===','&&!quote){row.push(cell);cell='';}else if((ch==='\n'||ch==='\r')&&!quote){if(ch==='\r'&&text[i+1]==='\n')i++;row.push(cell);rows.push(row);row=[];cell='';}else cell+=ch;}if(cell||row.length){row.push(cell);rows.push(row);}const header=rows.shift();return rows.filter(r=>r.some(Boolean)).map(r=>Object.fromEntries(header.map((key,i)=>[key,r[i]||''])));}
@@ -70,7 +70,7 @@ for(const [n,r] of active.entries()){
  const extracted=filePath&&fs.existsSync(filePath)?blocksFromText(curatedText(id,fs.readFileSync(filePath,'utf8'))):[];
  const sourceBlocks=extracted.length?extracted:legacyBlocks(legacy,id);
  if(!sourceBlocks.length)throw Error('No recoverable source wording for active source: '+id);
- const rows=[blockHeaders];sourceBlocks.forEach(([kind,paragraph,marker,text],i)=>rows.push([id+'-B'+String(i+1).padStart(3,'0'),id,i+1,kind,kind==='heading'?'1':'',kind==='heading'?text:'',paragraph,marker?'1':'',marker,text,'','Awaiting researcher review','']));
+ const rows=[blockHeaders];sourceBlocks.forEach(([kind,paragraph,marker,text],i)=>rows.push([id+'-B'+String(i+1).padStart(3,'0'),id,i+1,kind,kind==='heading'?'1':'',kind==='heading'?text:'',paragraph,marker?'1':'',marker,text,'','Awaiting researcher review','','','','','','','','']));
  const name='SRC_'+String(n+1).padStart(2,'0'),ws=sheet(rows);applyWidths(ws,[24,18,12,14,14,28,14,12,14,88,88,28,48]);XLSX.utils.book_append_sheet(wb,ws,name);
  const digest=crypto.createHash('sha256').update(sourceBlocks.map(x=>x[3]).join('\n')).digest('hex');
  const matches=Object.entries(duplicates).filter(([,value])=>value===id).map(([key])=>key).join('; ');
