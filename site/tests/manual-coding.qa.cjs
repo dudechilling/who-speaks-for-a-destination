@@ -28,6 +28,24 @@ const out=process.env.CLAUSE_QA_DIR||'/tmp';
  await p.locator('.manual-suggestion').first().click();
  await check('#manual-evidence');
  assert.equal(await p.locator('#manual-process-type').inputValue(),'');
+ assert.equal(await p.getByText('Suggested clause',{exact:true}).count(),0);
+ assert.equal(await p.getByText('AI-suggested boundary',{exact:false}).count(),0);
+ assert.equal(await p.locator('.manual-coding-fields > .manual-field').count(),6);
+ const layout=await p.locator('.manual-coding-fields').evaluate(el=>{
+  const parent=el.closest('.reading-scroll'),r=parent.getBoundingClientRect();
+  const fields=[...el.querySelectorAll(':scope>.manual-field>label')].map(n=>({label:n.textContent,top:Math.round(n.getBoundingClientRect().top-r.top),visible:n.getBoundingClientRect().bottom<=r.bottom}));
+  return {height:Math.round(r.height),fields};
+ });
+ console.log('COMPACT EDITOR',JSON.stringify(layout));
+ assert.equal(layout.fields.filter(x=>x.visible).length,6);
+ const visibleControls=await p.locator('.manual-coding-fields').evaluate(el=>{
+  const outer=el.closest('.reading-scroll').getBoundingClientRect();
+  return ['manual-process-type','manual-voice','manual-process','manual-role','manual-institutional-priority','manual-represented-beneficiary'].every(id=>{const r=document.getElementById(id).getBoundingClientRect();return r.top>=outer.top&&r.bottom<=outer.bottom+1;});
+ });
+ assert.equal(visibleControls,true);
+ assert.equal(await p.locator('[data-manual-action="save"]').isVisible(),true);
+ await p.screenshot({path:path.join(out,'compact-coding.png')});
+
  const original=await p.locator('#manual-evidence').inputValue();
  assert.ok(original.length>24);
  await p.locator('[data-manual-action="adjust"]').click();
@@ -47,7 +65,7 @@ const out=process.env.CLAUSE_QA_DIR||'/tmp';
  await p.locator('#manual-voice').selectOption('active');
  await p.locator('#manual-institutional-priority').selectOption('destination_marketing');
  await p.locator('#manual-represented-beneficiary').selectOption('not_expressed');
- await p.locator('#manual-note').fill('TEST ONLY — artificial QA annotation');
+ await p.locator('.manual-note summary').click();await p.locator('#manual-note').fill('TEST ONLY — artificial QA annotation');
  await p.locator('[data-manual-action="save"]').click();await p.getByText('Clause saved locally.',{exact:false}).waitFor();
  await p.screenshot({path:path.join(out,'manual-coding.png')});
  await p.locator('.reading-workbook-details summary').click();await p.locator('[data-manual-mode]').click();
