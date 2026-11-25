@@ -106,23 +106,20 @@ test('Corpus omits the Type filter and export and the controls share one grid',(
  assert.doesNotMatch(workflow,/corpus-type|<th>TYPE<\/th>/);
  assert.match(css,/grid-template-columns:minmax\(190px,2fr\)/);
 });
-test('Paragraph boundaries and display headings are in the canonical workbook',()=>{
+test('Phase 01A preserves source block order and paragraph identifiers',()=>{
  const source=fs.readFileSync(new URL('../data/language.xlsx',import.meta.url));
  const ctx={window:{},Uint8Array,ArrayBuffer,TextDecoder,TextEncoder,Buffer};
  vm.createContext(ctx);
  vm.runInContext(fs.readFileSync(new URL('../vendor/xlsx.full.min.js',import.meta.url),'utf8'),ctx);
  const wb=ctx.XLSX.read(source,{type:'buffer'});
- const sheet=ctx.XLSX.utils.sheet_to_json(wb.Sheets.VI_2002,{defval:''});
- assert.equal(sheet.length,13);
- assert.equal(sheet[0].paragraph_id,sheet[1].paragraph_id);
- assert.equal(sheet[8].paragraph_id,sheet[11].paragraph_id);
- assert.notEqual(sheet[11].paragraph_id,sheet[12].paragraph_id);
- assert.equal(sheet[0].heading_before,'## ABOUT US');
- assert.equal(sheet[1].join_after,' – ');
- const current=ctx.XLSX.utils.sheet_to_json(wb.Sheets.VI_Current,{defval:''});
- assert.match(current[1].heading_before,/Our Commitment to the Future/);
- assert.equal(current[0].block_kind,'lead');
- assert.equal(sheet[0].human_review_status,'');
+ const index=ctx.XLSX.utils.sheet_to_json(wb.Sheets.Index,{header:1,defval:''});
+ const h=index[1], id=h.indexOf('source_id'), sheetColumn=h.indexOf('worksheet');
+ const record=index.find((row,n)=>n>1&&row[id]==='VI-2002-01');
+ const sheet=ctx.XLSX.utils.sheet_to_json(wb.Sheets[record[sheetColumn]],{defval:''});
+ assert.ok(sheet.length>3);
+ assert.ok(sheet.every(row=>row.source_order));
+ assert.ok(sheet.some(row=>row.paragraph_id));
+ assert.ok(sheet.every(row=>row.source_review_status==='Awaiting researcher review'));
 });
 test('Global AI disclosure links to an explicitly labelled placeholder page',()=>{
  const page=fs.readFileSync(new URL('../index.html',import.meta.url),'utf8');

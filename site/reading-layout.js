@@ -56,9 +56,8 @@ function readingSourceTools(reviewMode) {
   return '<details class="reading-workbook-details"><summary aria-label="Language workbook settings">Workbook · ' +
     (imported ? 'Imported' : 'GitHub') + '<span class="reading-row-count"> · ' + (data?.rows || 0) + ' rows</span></summary>' +
     '<div class="reading-workbook-menu"><strong title="' + esc(label) + '">' + esc(label) + '</strong>' +
-    '<button type="button" class="reading-action reading-mode-action" data-language-mode="' +
-      (state.languageMode==='review'?'analysis':'review') + '">' +
-      (state.languageMode==='review'?'Return to clause analysis':'Open coding review') + '</button>' +
+    '<p class="micro">Source-only phase — coding is not enabled.</p>' +
+    '<button type="button" class="reading-action" data-export-xlsx>Download complete XLSX</button>' +
     '<label for="language-import">Import language XLSX</label><input id="language-import" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">' +
     '<button type="button" class="reading-action" data-restore="language">Restore GitHub workbook</button>' +
     '<p>Imports remain in this browser. Available years and annotations update from the selected file.</p>' +
@@ -224,10 +223,8 @@ function readingFooter(rows, source, reviewMode) {
     ? '<a class="reading-source-citation" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" title="'+esc(url)+'">Source: '+esc(orgName)+' About ('+esc(sourceId)+')'+
       (date?' · '+(archive?'Archived ':'Retrieved ')+esc(readingDateLabel(date)):'')+' ↗</a>'
     : '<span class="reading-source-unavailable">Source link unavailable for the displayed About page</span>';
-  const detail=count+(reviewMode?' available review rows':' workbook passages')+
-    ' · '+(reviewMode?(state.owner?'Private reviewer':'Local visitor workspace'):'AI-proposed; human review pending');
-  return '<div class="reading-legend" aria-label="SFL process highlight key"><span class="reading-legend-label">SFL concepts · Proposed</span>'+
-    readingLegend(rows,reviewMode)+'</div>'+
+  const detail=count+' source blocks · Awaiting researcher review';
+  return '<div class="reading-legend" aria-label="Corpus status"><span class="reading-legend-label">Source-only corpus · Uncoded</span></div>'+
     '<div class="reading-footnotes">'+citation+'<span>'+esc(detail)+'</span></div>';
 }
 function readingSourcePicker(options,selected) {

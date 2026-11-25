@@ -6,7 +6,7 @@ A workbook-backed research atlas for CMNS 3500 at Thompson Rivers University.
 
 ## The published evidence
 
-**Language — one canonical workbook:** [RDMO_about_coding_review.xlsx](RDMO_about_coding_review.xlsx) is the sole canonical language workbook. It preserves ten anchor sources (194 provisional clauses) and 26 recoverable longitudinal sources awaiting researcher review. The original clause wording, normalized wording, original AI coding, source locations and review state are preserved. New source material is unsegmented and uncoded; it does not inherit a proposal from an anchor source.
+**Language — one canonical workbook:** [RDMO_about_coding_review.xlsx](RDMO_about_coding_review.xlsx) is the sole canonical language workbook. Phase 01A contains 36 recovered, source-only About-page captures and a 41-record discovery inventory. Source blocks preserve recovered headings, paragraphs and list items. All active blocks are uncoded and marked “Awaiting researcher review.” Two likely duplicate capture pairs remain separately selectable until their substantive comparison is documented.
 
 Human review is recorded separately in human_* fields. Empty review fields are not accepted findings. Only some headings and paragraph boundaries have been checked against original captures; the boundary_basis column distinguishes screenshot-checked, DOM-locator and unverified groups. The website shows selected indexed passages, not necessarily entire historical webpages.
 
@@ -18,8 +18,8 @@ The retained-source reconciliation is recorded in [the longitudinal inventory](c
 
 ## Adjudication: browser → Excel → GitHub
 
-1. Open **Language → Workbook · GitHub → Review source text** to compare a recovered passage with its linked capture, retain the recovered wording, correct the working text, edit heading/paragraph/order metadata, and mark the source reviewed. Then use **Open coding review** to code the corrected working text. Proposed AI fields remain separate from human decisions.
-2. Approve or reject coding locally, then select Export XLSX. The browser generates RDMO_about_coding_review.xlsx with the original text intact plus corrected text, source-review state, and human-review entries. No private review server is contacted.
+1. Open **Language** and select an organization, observed year and, where present, capture. The visible blocks are source material only; the analytical fields state “Not coded.”
+2. The former clause proposals and segmentation are preserved privately at the Phase 01A archival reference. They are not part of the active workbook or public interface while Earl and ChatGPT develop the codebook.
 3. Open the exported workbook in Excel. Inspect every correction and review status against the original source. Browser approval alone is not authenticated source verification.
 4. Replace the canonical workbook on GitHub main after manual inspection. GitHub Pages republishes the reviewed file, with changes preserved in Git history. Browser storage is local only; it does not write to GitHub.
 

@@ -33,16 +33,17 @@ function parseLanguage(ab,name='language.xlsx'){
    docs.push({id:String(r.source_id),sheet:String(r.worksheet),region:rid(r.worksheet)||rid(r.source_id),url:String(r.source_url||''),original_url:String(r.original_url||''),date,capture_timestamp:date,year:dateYear(date)||dateYear(r.publication_date)||dateYear(r.source_id),status:String(r.source_verification_status||'pending_human_review'),title:String(r.page_title||r.worksheet),source_text_status:String(r.source_text_status||'')});
  }
  for(const n of wb.SheetNames){
-   if(n==='Index'||n==='Source Decisions')continue;
+   if(n==='Index'||n==='Source Decisions'||n==='Source Inventory')continue;
    const sh=wb.Sheets[n],raw=XLSX.utils.sheet_to_json(sh,{header:1,defval:''});
    let hr=raw.findIndex(r=>String(r[0]).trim()==='clause_id');
    if(hr<0)hr=raw.findIndex(r=>String(r[0]).trim()==='row_id');
+   if(hr<0)hr=raw.findIndex(r=>String(r[0]).trim()==='block_id');
    if(hr<0)continue;
    for(const r of rows(sh,hr)){
-     const modern='row_id'in r,id=String(modern?r.row_id:r.clause_id||''); if(!id)continue;
-     const source=String(modern?r.about_id:r.source_id||'');let d=docs.find(x=>x.id===source);
+     const sourceOnly='block_id'in r,modern='row_id'in r,id=String(sourceOnly?r.block_id:(modern?r.row_id:r.clause_id)||''); if(!id)continue;
+     const source=String(sourceOnly?r.source_id:(modern?r.about_id:r.source_id)||'');let d=docs.find(x=>x.id===source);
      if(!d){const date=String(modern?r.capture_date:'');d={id:source||n,sheet:n,region:rid(n),url:String(r.source_url||''),date,year:dateYear(date),status:String(modern?r.review_status:r.review_state||'pending_human_review'),title:n};docs.push(d)}
-     clauses.push({id,source,region:d.region||rid(n),year:d.year,text:String(modern?r.verbatim_text:r.original_clause||''),process:String(modern?r.process_type:r.ideational_process_type||'Not coded'),actor:String(modern?r.actor:r.ideational_primary_participant||'Not stated'),affected_participant:String(r.affected_participant||'Not stated'),agency:String(modern?r.agency_voice:r.representation_note||'Not stated'),modality:String(modern?r.modality:r.interpersonal_modality||'none'),institutional_priority:String(r.institutional_priority||'Not stated'),social_actor_representation:String(r.social_actor_representation||r.representation_note||'Not stated'),annotations:String(r.annotations||r.coding_note||''),status:String(modern?r.review_status:r.review_state||'pending_human_review'),type:String(r.text_type||'clause'),section:String(modern?r.page_section:r.source_location||''),block_id:String(r.paragraph_id||r.block_id||''),block_kind:String(r.block_kind||''),heading_before:String(r.heading_before||''),join_after:String(r.join_after??' '),human_review_status:String(r.human_review_status||''),human_review_note:String(r.human_review_note||''),human_reviewed_at_utc:String(r.human_reviewed_at_utc||''),human_corrected_clause:String(r.human_corrected_clause||''),...Object.fromEntries(CODE.map(k=>['human_'+k,String(r['human_'+k]||'')])),source_order:Number(r.source_order)||null,url:String(r.source_url||d.url||'')});
+     clauses.push({id,source,region:d.region||rid(n),year:d.year,text:String(sourceOnly?(r.corrected_text||r.original_text):(modern?r.verbatim_text:r.original_clause)||''),process:'Not coded',actor:'Not coded',affected_participant:'Not coded',agency:'Not coded',modality:'Not coded',institutional_priority:'Not coded',social_actor_representation:'Not coded',annotations:String(sourceOnly?r.source_review_note:(r.annotations||r.coding_note||'')),status:String(sourceOnly?r.source_review_status:(modern?r.review_status:r.review_state)||'Awaiting researcher review'),type:String(sourceOnly?r.block_kind:(r.text_type||'clause')),section:String(sourceOnly?r.heading_text:(modern?r.page_section:r.source_location)||''),block_id:String(sourceOnly?r.paragraph_id:(r.paragraph_id||r.block_id)||''),block_kind:String(sourceOnly?r.block_kind:(r.block_kind||'')),heading_before:'',join_after:' ',source_order:Number(r.source_order)||null,url:String(r.source_url||d.url||'')});
    }
  }
  if(!clauses.length)throw Error('No recognized language rows. Expected legacy Index/document sheets or region sheets.');
@@ -113,8 +114,13 @@ async function restore(kind){const f=kind==='language'?'data/language.xlsx':'dat
 function download(name,data,type='application/json'){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([data],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 function visitorValues(r){const values={};for(const f of CODE)values[f]=$('#code-'+f)?.value||'';values.annotations=$('#adjudicator-note')?.value||'';values.corrected_text=$('#corrected-text')?.value||'';if(r.custom){values.verbatim_text=values.text=r.verbatim_text||r.text||''}return values}
 async function adjudicate(kind){return window.CanonicalWorkbook?.exportCanonical?.()}
-function exportWorkspace(){return window.CanonicalWorkbook?.exportCanonical?.()}
-async function exportOwner(){return window.CanonicalWorkbook?.exportCanonical?.()}
+function exportWorkspace(){return exportOwner()}
+async function exportOwner(){
+ if(window.CanonicalWorkbook?.exportCanonical)return window.CanonicalWorkbook.exportCanonical();
+ if(!state.language?.workbookBytes)return;
+ download('RDMO_about_coding_review.xlsx',state.language.workbookBytes,
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+}
 document.addEventListener('click',async e=>{const q=e.target.closest.bind(e.target);if(q('#dock a'))return;if(q('[data-language-mode]')){
   const mode=q('[data-language-mode]').dataset.languageMode;
   if(state.route!=='language'||!['analysis','review'].includes(mode))return;

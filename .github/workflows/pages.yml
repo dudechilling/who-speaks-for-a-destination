@@ -50,14 +50,18 @@ jobs:
           python - <<'PYCODE'
           from openpyxl import load_workbook
           book=load_workbook('RDMO_about_coding_review.xlsx',read_only=True,data_only=True)
-          assert len(book.sheetnames)>=11
+          assert 'Index' in book.sheetnames and 'Source Inventory' in book.sheetnames
+          index=list(book['Index'].values)
+          header=index[1]
+          assert {'source_id','worksheet','capture_timestamp','source_verification_status','source_text_sha256'}.issubset(header)
+          assert len(index)-2 >= 36
           total=0
-          required={'source_order','paragraph_id','block_kind','heading_before','boundary_basis','human_review_status','human_actor'}
-          for sheet in list(book)[1:]:
+          required={'block_id','source_id','source_order','block_kind','paragraph_id','original_text','corrected_text','source_review_status'}
+          for sheet in [book[name] for name in book.sheetnames if name.startswith('SRC_')]:
               columns={cell.value for cell in next(sheet.rows)}
               assert required.issubset(columns),sheet.title
               total+=sheet.max_row-1
-          assert total>=194,total
+          assert total>=271,total
           book.close()
           PYCODE
           cmp RDMO_about_coding_review.xlsx site/data/language.xlsx
