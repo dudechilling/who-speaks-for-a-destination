@@ -206,7 +206,7 @@ function readingAnnotations(selected, source) {
 }
 function readingHeader(reviewMode) {
   const title = reviewMode ? 'Annotation<br>Adjudicator' : 'The language<br>of a destination';
-  const subtitle = reviewMode ? 'Model assisted. Human adjudicated.' : 'How each RDMO described its organization';
+  const subtitle = reviewMode ? 'Researcher coding workspace.' : 'How each RDMO described its organization';
   return '<div class="corner-meta">THOMPSON RIVERS UNIVERSITY | CMNS 3500 | FALL 2026</div>' +
     '<header class="reading-heading"><div><h1 class="page-title">' + title + '</h1><p class="page-subtitle">' + subtitle + '</p></div>' +
     readingSourceTools(reviewMode) + '</header>';

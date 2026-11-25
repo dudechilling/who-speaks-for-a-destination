@@ -12,7 +12,8 @@
      '<p>Imports remain in this browser.');
  };
  readingHeader=function sharedLanguageHeader(){return originalReadingHeader(false);};
- const fields=['process_type','actor','affected_participant','agency_voice','modality','institutional_priority','social_actor_representation'];
+ // Codebook v0.6 is the sole authority for these six active coding fields.
+ const fields=['process_type','process','participants','voice','institutional_priority','represented_beneficiary'];
 
  readingAnnotations=function selectedAnnotations(row){
    return originalAnnotations(row)

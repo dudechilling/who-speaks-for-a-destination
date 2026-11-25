@@ -20,11 +20,10 @@ test('browser adjudication uses a single canonical XLSX and no private API',()=>
  assert.doesNotMatch(browser,/\/api\//);
  assert.match(app,/localStorage\.getItem\('rdmo-visitor-v1'\)/);
 });
-test('coding select values remain explicit and browser review controls exist',()=>{
+test('Codebook v0.6 coding fields and browser review controls exist',()=>{
  const workflow=fs.readFileSync(new URL('../canonical-workflow.js',import.meta.url),'utf8');
- assert.match(app,/process_type:\['material','relational','mental','verbal'/);
- assert.match(app,/agency_voice:\['active','passive','non_finite'/);
- assert.match(app,/modality:\['probability','usuality','obligation'/);
+ assert.match(app,/process_type:\['material','mental','relational','verbal'/);
+ assert.match(app,/represented_beneficiary/);
  for(const label of ['data-review-prev','data-review-next','data-export-xlsx','data-approve','data-reject'])
    assert.ok(workflow.includes(label),label);
  assert.doesNotMatch(workflow,/data-connect|data-import-json|data-export-json/);
