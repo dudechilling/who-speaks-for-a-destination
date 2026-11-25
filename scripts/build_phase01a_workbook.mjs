@@ -34,6 +34,18 @@ const blockHeaders=['block_id','source_id','source_order','block_kind','heading_
 function shaFile(p){return crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');}
 function parseCsv(text){const rows=[];let quote=false,cell='',row=[];for(let i=0;i<text.length;i++){const ch=text[i];if(ch==='"'){if(quote&&text[i+1]==='"'){cell+='"';i++;}else quote=!quote;}else if(ch===','&&!quote){row.push(cell);cell='';}else if((ch==='\n'||ch==='\r')&&!quote){if(ch==='\r'&&text[i+1]==='\n')i++;row.push(cell);rows.push(row);row=[];cell='';}else cell+=ch;}if(cell||row.length){row.push(cell);rows.push(row);}const header=rows.shift();return rows.filter(r=>r.some(Boolean)).map(r=>Object.fromEntries(header.map((key,i)=>[key,r[i]||''])));}
 function normalize(value){return String(value||'').replace(/[ \t\u00a0]+/g,' ').trim();}
+function curatedText(sourceId, raw){
+ const between=(start,end)=>{const a=raw.indexOf(start);const b=a>=0?raw.indexOf(end,a+start.length):-1;return a>=0&&b>a?raw.slice(a,b):raw;};
+ // These are documented source boundaries, not content rewrites. They remove
+ // navigation, duplicated menus, contact directories and board rosters.
+ if(sourceId==='VI-2002-01'||sourceId==='VI-H')return between('Tourism\nVancouver Island is one of six','Board\nof Directors');
+ if(sourceId==='VI-2008-10')return between('Tourism Vancouver Island is a destination marketing organization','Explore  Our Organization');
+ if(sourceId==='VI-2021-10')return between('Tourism Vancouver Island is a not-for-profit organization','Stakeholder Resources');
+ if(sourceId==='TO-C')return between('About    TOTA is at the forefront','What We Do');
+ if(sourceId==='NB-C')return between('About Us      Guiding Tourism Together','Corporate News');
+ if(sourceId==='CC-C')return between('Cariboo Chilcotin Coast Tourism is a non-profit','Cariboo Chilcotin Coast Tourism\nSign Up');
+ return raw;
+}
 function blocksFromText(source){const chunks=String(source).replace(/\r\n?|\f/g,'\n').split(/\n\s*\n+/).filter(x=>normalize(x));const out=[];let para=0;for(const chunk of chunks){const lines=chunk.split('\n').map(normalize).filter(Boolean);if(!lines.length)continue;if(lines.length===1&&lines[0].length<120&&/^[A-Z0-9 &/:'’\-.,()]+$/.test(lines[0])){out.push(['heading','','',lines[0]]);continue;}para++;for(const line of lines){const m=line.match(/^(?:([*•▪●-])|(\d+)[.)]|([A-Z])[.)])\s+(.+)$/);out.push(m?['list_item','P'+para,m[1]||m[2]||m[3],m[4]]:['paragraph','P'+para,'',line]);}}return out;}
 function legacyBlocks(book,sourceId){const index=XLSX.utils.sheet_to_json(book.Sheets.Index,{header:1,defval:''});const h=index.findIndex(r=>r[0]==='source_id');if(h<0)return[];const cols=Object.fromEntries(index[h].map((x,i)=>[x,i]));const source=index.slice(h+1).find(r=>r[cols.source_id]===sourceId);const sheet=source?.[cols.worksheet];if(!sheet||!book.Sheets[sheet])return[];const rows=XLSX.utils.sheet_to_json(book.Sheets[sheet],{header:1,defval:''});const p=rows.findIndex(r=>r[0]==='clause_id'||r[0]==='row_id'||r[0]==='block_id');if(p<0)return[];const c=Object.fromEntries(rows[p].map((x,i)=>[x,i]));const text=c.original_clause??c.verbatim_text??c.original_text,kind=c.text_type??c.block_kind,paragraph=c.paragraph_id;return rows.slice(p+1).filter(r=>r[text]).map(r=>[r[kind]==='heading'?'heading':'paragraph',String(r[paragraph]||''),'',String(r[text])]);}
 function sheet(rows){return XLSX.utils.aoa_to_sheet(rows);}
@@ -55,7 +67,7 @@ XLSX.utils.book_append_sheet(wb,sheet(indexRows),'Index');
 XLSX.utils.book_append_sheet(wb,sheet(registerRows),'Source Inventory');
 for(const [n,r] of active.entries()){
  const id=r.source_id,file=files[id],filePath=file&&path.join(privateText,file);
- const extracted=filePath&&fs.existsSync(filePath)?blocksFromText(fs.readFileSync(filePath,'utf8')):[];
+ const extracted=filePath&&fs.existsSync(filePath)?blocksFromText(curatedText(id,fs.readFileSync(filePath,'utf8'))):[];
  const sourceBlocks=extracted.length?extracted:legacyBlocks(legacy,id);
  if(!sourceBlocks.length)throw Error('No recoverable source wording for active source: '+id);
  const rows=[blockHeaders];sourceBlocks.forEach(([kind,paragraph,marker,text],i)=>rows.push([id+'-B'+String(i+1).padStart(3,'0'),id,i+1,kind,kind==='heading'?'1':'',kind==='heading'?text:'',paragraph,marker?'1':'',marker,text,'','Awaiting researcher review','']));
